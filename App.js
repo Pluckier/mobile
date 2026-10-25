@@ -23,6 +23,18 @@ const getFormattedToday = () => {
   return `${day}-${month}-${year}`;
 };
 
+// Check if a horse is a non-runner
+const isHorseNR = (horse) => {
+  if (!horse) return false;
+  if (horse.number === 'NR' || horse.status === 'NR') return true;
+  const odds = horse.odds || [];
+  if (odds.length > 0) {
+    const last = odds[odds.length - 1];
+    return last === 'NR' || last === 'null' || last === 'Non-Runner';
+  }
+  return false;
+};
+
 // Calculate average rating from the last 3 runs (using property run.name)
 const getAverageRating = (horse) => {
   const runs = (horse?.past || []).slice(0, 3);
@@ -166,10 +178,18 @@ export default function App() {
 
   const selectedRace = races[selectedRaceIndex] || null;
 
-  // Order horses descending by average rating of their last 3 runs (run.name)
+  // Order horses: Active runners first (by 3-run avg rating descending), Non-Runners (NR) at the bottom
   const horses = useMemo(() => {
     const rawHorses = selectedRace?.horses || [];
     return [...rawHorses].sort((a, b) => {
+      const isNRA = isHorseNR(a);
+      const isNRB = isHorseNR(b);
+
+      // Always push non-runners to the bottom
+      if (isNRA !== isNRB) {
+        return isNRA ? 1 : -1;
+      }
+
       const ratingA = getAverageRating(a);
       const ratingB = getAverageRating(b);
       if (ratingB !== ratingA) {
@@ -235,12 +255,12 @@ export default function App() {
       const horseNum = item.number || index + 1;
       const pastRuns = item.past || [];
       const isExpanded = expandedHorse === item.name;
+      const isNR = isHorseNR(item);
       const avgRating = getAverageRating(item);
       const latestOdd =
         Array.isArray(item.odds) && item.odds.length > 0
           ? item.odds[item.odds.length - 1]
           : null;
-      const isNR = latestOdd === 'NR' || latestOdd === 'null';
       const isOddRow = index % 2 === 1;
 
       if (isCompact) {
@@ -248,7 +268,11 @@ export default function App() {
         return (
           <View key={`${item.name}-${item.number || index}`} style={styles.rowContainer}>
             <TouchableOpacity
-              style={[styles.compactRow, isOddRow && styles.rowAlt]}
+              style={[
+                styles.compactRow,
+                isOddRow && styles.rowAlt,
+                isNR && styles.nonRunnerRow,
+              ]}
               onPress={() => toggleExpand(item.name)}
               activeOpacity={0.7}
             >
@@ -283,7 +307,10 @@ export default function App() {
                 </View>
 
                 {/* 4. Name */}
-                <Text style={styles.compactNameText} numberOfLines={1}>
+                <Text
+                  style={[styles.compactNameText, isNR && styles.nameTextNR]}
+                  numberOfLines={1}
+                >
                   {item.name}
                 </Text>
 
@@ -330,10 +357,16 @@ export default function App() {
                   </View>
 
                   {/* 10. Latest Odd */}
-                  {latestOdd ? (
-                    <View style={[styles.oddsPill, isNR && styles.oddsPillNR]}>
-                      <Text style={[styles.oddsPillText, isNR && styles.oddsPillTextNR]}>
-                        {isNR ? 'NR' : latestOdd}
+                  {isNR ? (
+                    <View style={[styles.oddsPill, styles.oddsPillNR]}>
+                      <Text style={[styles.oddsPillText, styles.oddsPillTextNR]}>
+                        NR
+                      </Text>
+                    </View>
+                  ) : latestOdd ? (
+                    <View style={styles.oddsPill}>
+                      <Text style={styles.oddsPillText}>
+                        {latestOdd}
                       </Text>
                     </View>
                   ) : (
@@ -399,7 +432,11 @@ export default function App() {
       return (
         <View key={`${item.name}-${item.number || index}`} style={styles.rowContainer}>
           <TouchableOpacity
-            style={[styles.singleLineRow, isOddRow && styles.rowAlt]}
+            style={[
+              styles.singleLineRow,
+              isOddRow && styles.rowAlt,
+              isNR && styles.nonRunnerRow,
+            ]}
             onPress={() => toggleExpand(item.name)}
             activeOpacity={0.7}
           >
@@ -435,7 +472,10 @@ export default function App() {
 
             {/* 4. Name */}
             <View style={styles.colName}>
-              <Text style={styles.nameText} numberOfLines={1}>
+              <Text
+                style={[styles.nameText, isNR && styles.nameTextNR]}
+                numberOfLines={1}
+              >
                 {item.name}
               </Text>
             </View>
@@ -486,16 +526,12 @@ export default function App() {
             </View>
 
             {/* 10. Latest Odd with Trend Color Logic */}
-            {latestOdd ? (
+            {isNR ? (
+              <View style={[styles.oddsPill, styles.oddsPillNR]}>
+                <Text style={[styles.oddsPillText, styles.oddsPillTextNR]}>NR</Text>
+              </View>
+            ) : latestOdd ? (
               (() => {
-                if (isNR) {
-                  return (
-                    <View style={[styles.oddsPill, styles.oddsPillNR]}>
-                      <Text style={[styles.oddsPillText, styles.oddsPillTextNR]}>NR</Text>
-                    </View>
-                  );
-                }
-
                 const oddsArr = Array.isArray(item.odds) ? item.odds : [];
                 const prevOdd = oddsArr.length >= 2 ? parseFloat(oddsArr[oddsArr.length - 2]) : null;
                 const currentOddNum = parseFloat(latestOdd);
@@ -979,6 +1015,14 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
     },
     rowAlt: {
       backgroundColor: theme.rowAltBg,
+    },
+    nonRunnerRow: {
+      opacity: 0.42,
+      backgroundColor: theme.isDark ? '#141416' : '#f1f3f4',
+    },
+    nameTextNR: {
+      textDecorationLine: 'line-through',
+      color: theme.textTertiary,
     },
     colSilks: {
       width: s(34),
