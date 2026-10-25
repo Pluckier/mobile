@@ -72,7 +72,9 @@ const getTheme = (isDark) => ({
   ratingPillInactiveBg: isDark ? '#262626' : '#f1f3f4',
   ratingPillInactiveText: isDark ? '#525252' : '#9aa0a6',
   oddsBadgeBg: isDark ? '#3b1219' : '#fce8e6',
+  oddsBadgeBgBlue: isDark ? '#11223f' : '#e8f0fe',
   oddsText: isDark ? '#f87171' : '#c5221f',
+  oddsTextBlue: isDark ? '#60a5fa' : '#1a73e8',
   oddsNrBg: isDark ? '#262626' : '#f1f3f4',
   oddsNrText: isDark ? '#94a3b8' : '#5f6368',
   pastBtnBg: isDark ? '#172554' : '#e8f0fe',
@@ -482,18 +484,53 @@ export default function App() {
               </View>
             </View>
 
-            {/* 10. Latest Odd */}
-            <View style={styles.colOdds}>
-              {latestOdd ? (
-                <View style={[styles.oddsPill, isNR && styles.oddsPillNR]}>
-                  <Text style={[styles.oddsPillText, isNR && styles.oddsPillTextNR]}>
-                    {isNR ? 'NR' : latestOdd}
-                  </Text>
-                </View>
-              ) : (
-                <Text style={styles.oddsDash}>-</Text>
-              )}
-            </View>
+            {/* 10. Latest Odd with Trend Color Logic */}
+            {latestOdd ? (
+              (() => {
+                if (isNR) {
+                  return (
+                    <View style={[styles.oddsPill, styles.oddsPillNR]}>
+                      <Text style={[styles.oddsPillText, styles.oddsPillTextNR]}>NR</Text>
+                    </View>
+                  );
+                }
+
+                const oddsArr = Array.isArray(item.odds) ? item.odds : [];
+                const prevOdd = oddsArr.length >= 2 ? parseFloat(oddsArr[oddsArr.length - 2]) : null;
+                const currentOddNum = parseFloat(latestOdd);
+
+                let badgeStyle = styles.oddsPill;
+                let textStyle = styles.oddsPillText;
+
+                if (!isNaN(prevOdd) && !isNaN(currentOddNum)) {
+                  if (prevOdd > currentOddNum) {
+                    // Previous was bigger -> Red trend (price dropped/shortened)
+                    badgeStyle = styles.oddsPill;
+                    textStyle = styles.oddsPillText;
+                  } else if (prevOdd < currentOddNum) {
+                    // Previous was smaller -> Blue trend (price drifted/went up)
+                    badgeStyle = [styles.oddsPill, { backgroundColor: theme.oddsBadgeBgBlue }];
+                    textStyle = [styles.oddsPillText, { color: theme.oddsTextBlue }];
+                  } else {
+                    // Previous is exactly equal to current -> White text, dark slate / standard neutral background
+                    badgeStyle = [styles.oddsPill, { backgroundColor: theme.isDark ? '#27272a' : '#5f6368' }];
+                    textStyle = [styles.oddsPillText, { color: '#ffffff' }];
+                  }
+                } else {
+                  // Missing history fallback -> White text, neutral background
+                  badgeStyle = [styles.oddsPill, { backgroundColor: theme.isDark ? '#27272a' : '#5f6368' }];
+                  textStyle = [styles.oddsPillText, { color: '#ffffff' }];
+                }
+
+                return (
+                  <View style={badgeStyle}>
+                    <Text style={textStyle}>{latestOdd}</Text>
+                  </View>
+                );
+              })()
+            ) : (
+              <Text style={styles.oddsDash}>-</Text>
+            )}
 
             {/* 11. Past runs summary / details toggle */}
             <View style={styles.colPast}>
