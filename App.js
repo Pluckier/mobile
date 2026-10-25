@@ -227,7 +227,7 @@ export default function App() {
       const isOddRow = index % 2 === 1;
 
       if (isCompact) {
-        // Phone layout (< 650px): Line 1 (Horse identity) + Line 2 (Connections, Rating, Odds & Past)
+        // Condensed view (< 800px): Line 1 (Horse identity) + Line 2 (Connections, Rating, Odds & Past)
         return (
           <View key={`${item.name}-${item.number || index}`} style={styles.rowContainer}>
             <TouchableOpacity
@@ -332,7 +332,7 @@ export default function App() {
                           isExpanded && styles.pastBtnTextActive,
                         ]}
                       >
-                        {isExpanded ? '▲ hide' : `${pastRuns.length} runs ▼`}
+                        {isExpanded ? '▲ hide' : `${pastRuns.length} ▼`}
                       </Text>
                     </View>
                   ) : (
@@ -378,7 +378,7 @@ export default function App() {
         );
       }
 
-      // Desktop / Tablet layout (>= 650px): All 11 items spread out across the entire line
+      // Wide Desktop / Large Tablet layout (>= 800px): All 11 items spread cleanly across the entire line
       return (
         <View key={`${item.name}-${item.number || index}`} style={styles.rowContainer}>
           <TouchableOpacity
@@ -619,12 +619,12 @@ export default function App() {
         }
       >
         {isCompact ? (
-          // Compact (< 650px): Full-width vertical card list without horizontal scroll
+          // Condensed view (< 800px): Full-width vertical card list
           <View style={styles.compactWrapper}>
             {renderHorseRows()}
           </View>
         ) : (
-          // Wide (>= 650px): Full width table spanning 100% of the screen
+          // Wide view (>= 800px): Full width table spanning 100% of the screen
           <View style={styles.wideWrapper}>
             <View style={styles.tableHeaderRow}>
               <Text style={[styles.thText, styles.colSilks]}>Silks</Text>
@@ -693,9 +693,9 @@ const createStyles = (theme, isCompact) =>
       fontSize: 15,
     },
     header: {
-      paddingHorizontal: 16,
-      paddingTop: 14,
-      paddingBottom: 12,
+      paddingHorizontal: 12,
+      paddingTop: 10,
+      paddingBottom: 8,
       backgroundColor: theme.headerBg,
     },
     headerTop: {
@@ -720,7 +720,7 @@ const createStyles = (theme, isCompact) =>
       color: theme.toggleBtnText,
     },
     title: {
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: 'bold',
       color: theme.headerText,
     },
@@ -734,29 +734,29 @@ const createStyles = (theme, isCompact) =>
       borderRadius: 12,
     },
     subtitle: {
-      fontSize: 14,
+      fontSize: 13,
       color: theme.headerSubtitle,
-      marginTop: 4,
+      marginTop: 3,
     },
     raceDetail: {
-      fontSize: 12,
+      fontSize: 11.5,
       color: theme.headerDetail,
-      marginTop: 4,
+      marginTop: 3,
     },
     navBar: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       backgroundColor: theme.navBg,
-      paddingHorizontal: 16,
-      paddingVertical: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
       borderBottomWidth: 1,
       borderBottomColor: theme.navBorder,
     },
     navBtn: {
       backgroundColor: theme.navBtnBg,
-      paddingVertical: 7,
-      paddingHorizontal: 16,
+      paddingVertical: 6,
+      paddingHorizontal: 14,
       borderRadius: 6,
     },
     navBtnDisabled: {
@@ -773,7 +773,7 @@ const createStyles = (theme, isCompact) =>
     navCenter: {
       alignItems: 'center',
       flex: 1,
-      marginHorizontal: 10,
+      marginHorizontal: 8,
     },
     navRaceCounter: {
       fontSize: 11,
@@ -783,7 +783,7 @@ const createStyles = (theme, isCompact) =>
       letterSpacing: 0.5,
     },
     navRaceSummary: {
-      fontSize: 14,
+      fontSize: 13.5,
       fontWeight: '700',
       color: theme.navSummary,
       marginTop: 2,
@@ -794,7 +794,7 @@ const createStyles = (theme, isCompact) =>
     wideWrapper: {
       width: '100%',
       backgroundColor: theme.cardBg,
-      paddingBottom: 24,
+      paddingBottom: 16,
     },
     compactWrapper: {
       backgroundColor: theme.bg,
@@ -808,11 +808,11 @@ const createStyles = (theme, isCompact) =>
       backgroundColor: theme.tableHeaderBg,
       borderBottomWidth: 1,
       borderBottomColor: theme.tableHeaderBorder,
-      paddingVertical: 10,
-      paddingHorizontal: 12,
+      paddingVertical: 7,
+      paddingHorizontal: 8,
     },
     thText: {
-      fontSize: 11,
+      fontSize: 10.5,
       fontWeight: '700',
       color: theme.tableHeaderText,
       textTransform: 'uppercase',
@@ -828,13 +828,13 @@ const createStyles = (theme, isCompact) =>
       flexDirection: 'row',
       alignItems: 'center',
       width: '100%',
-      paddingVertical: 8,
-      paddingHorizontal: 12,
-      minHeight: 48,
+      paddingVertical: 6,
+      paddingHorizontal: 8,
+      minHeight: 44,
       backgroundColor: theme.cardBg,
     },
     compactRow: {
-      paddingVertical: 8,
+      paddingVertical: 7,
       paddingHorizontal: 10,
       backgroundColor: theme.cardBg,
       marginVertical: 2,
@@ -848,7 +848,7 @@ const createStyles = (theme, isCompact) =>
       alignItems: 'center',
     },
     compactSilksCol: {
-      width: 28,
+      width: 26,
       alignItems: 'center',
       justifyContent: 'center',
       marginRight: 4,
@@ -892,8 +892,8 @@ const createStyles = (theme, isCompact) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginTop: 6,
-      paddingTop: 5,
+      marginTop: 5,
+      paddingTop: 4,
       borderTopWidth: 0.5,
       borderTopColor: theme.pastBorder,
     },
@@ -910,129 +910,129 @@ const createStyles = (theme, isCompact) =>
       backgroundColor: theme.rowAltBg,
     },
     colSilks: {
-      width: 44,
+      width: 34,
       alignItems: 'center',
       justifyContent: 'center',
     },
     colNumber: {
-      width: 36,
+      width: 28,
       alignItems: 'center',
       justifyContent: 'center',
     },
     colForm: {
-      width: 80,
-      paddingHorizontal: 4,
+      width: 62,
+      paddingHorizontal: 2,
       justifyContent: 'center',
     },
     colName: {
-      flex: 3,
-      minWidth: 130,
-      paddingHorizontal: 8,
+      flex: 2,
+      minWidth: 110,
+      paddingHorizontal: 5,
       justifyContent: 'center',
     },
     colLastRun: {
-      width: 50,
+      width: 38,
       alignItems: 'center',
       justifyContent: 'center',
     },
     colAge: {
-      width: 44,
+      width: 32,
       alignItems: 'center',
       justifyContent: 'center',
     },
     colWeight: {
-      width: 60,
+      width: 48,
       alignItems: 'center',
       justifyContent: 'center',
     },
     colConnections: {
-      flex: 3,
-      minWidth: 150,
-      paddingHorizontal: 8,
+      flex: 2,
+      minWidth: 125,
+      paddingHorizontal: 5,
       justifyContent: 'center',
     },
     colRating: {
-      width: 60,
+      width: 48,
       alignItems: 'center',
       justifyContent: 'center',
     },
     colOdds: {
-      width: 60,
+      width: 48,
       alignItems: 'center',
       justifyContent: 'center',
     },
     colPast: {
-      width: 86,
+      width: 74,
       alignItems: 'center',
       justifyContent: 'center',
     },
     silksImage: {
-      width: 28,
-      height: 28,
+      width: 26,
+      height: 26,
     },
     silksPlaceholder: {
-      width: 28,
-      height: 28,
+      width: 26,
+      height: 26,
       borderRadius: 4,
       backgroundColor: theme.silksPlaceholderBg,
       justifyContent: 'center',
       alignItems: 'center',
     },
     silksPlaceholderText: {
-      fontSize: 15,
+      fontSize: 14,
     },
     numberText: {
-      fontSize: 12.5,
+      fontSize: 12,
       fontWeight: '700',
       color: theme.textSecondary,
     },
     drawText: {
-      fontSize: 10,
+      fontSize: 9.5,
       fontWeight: 'normal',
       color: theme.textTertiary,
     },
     formText: {
-      fontSize: 11,
+      fontSize: 10.5,
       fontWeight: '700',
       color: theme.isDark ? '#93c5fd' : '#174ea6',
       letterSpacing: 0.3,
     },
     nameText: {
-      fontSize: 13.5,
+      fontSize: 13,
       fontWeight: '700',
       color: theme.textPrimary,
     },
     lastRunText: {
-      fontSize: 11.5,
+      fontSize: 11,
       color: theme.textSecondary,
       fontWeight: '500',
     },
     ageText: {
-      fontSize: 11.5,
+      fontSize: 11,
       color: theme.textSecondary,
       fontWeight: '500',
     },
     weightText: {
-      fontSize: 11,
+      fontSize: 10.5,
       color: theme.textSecondary,
       fontWeight: '600',
     },
     jockeyText: {
-      fontSize: 10.5,
+      fontSize: 10,
       fontWeight: '600',
       color: theme.textPrimary,
     },
     trainerText: {
-      fontSize: 10,
+      fontSize: 9.5,
       color: theme.textSecondary,
       marginTop: 1,
     },
     ratingPill: {
       backgroundColor: theme.ratingPillInactiveBg,
-      paddingHorizontal: 6,
+      paddingHorizontal: 5,
       paddingVertical: 2,
       borderRadius: 4,
-      minWidth: 34,
+      minWidth: 32,
       alignItems: 'center',
     },
     ratingPillActive: {
@@ -1041,28 +1041,28 @@ const createStyles = (theme, isCompact) =>
       borderColor: theme.ratingPillBorder,
     },
     ratingPillText: {
-      fontSize: 11,
+      fontSize: 10.5,
       fontWeight: '600',
       color: theme.ratingPillInactiveText,
     },
     ratingPillTextActive: {
-      fontSize: 11.5,
+      fontSize: 11,
       fontWeight: '800',
       color: theme.ratingPillText,
     },
     oddsPill: {
       backgroundColor: theme.oddsBadgeBg,
-      paddingHorizontal: 7,
+      paddingHorizontal: 6,
       paddingVertical: 2,
       borderRadius: 4,
-      minWidth: 38,
+      minWidth: 36,
       alignItems: 'center',
     },
     oddsPillNR: {
       backgroundColor: theme.oddsNrBg,
     },
     oddsPillText: {
-      fontSize: 11.5,
+      fontSize: 11,
       fontWeight: '700',
       color: theme.oddsText,
     },
@@ -1077,8 +1077,8 @@ const createStyles = (theme, isCompact) =>
       backgroundColor: theme.pastBtnBg,
       borderWidth: 1,
       borderColor: theme.pastBtnBorder,
-      paddingHorizontal: 7,
-      paddingVertical: 3,
+      paddingHorizontal: 6,
+      paddingVertical: 2.5,
       borderRadius: 4,
     },
     pastBtnActive: {
@@ -1086,7 +1086,7 @@ const createStyles = (theme, isCompact) =>
       borderColor: theme.pastBtnActiveBg,
     },
     pastBtnText: {
-      fontSize: 10.5,
+      fontSize: 10,
       fontWeight: '700',
       color: theme.pastBtnText,
     },
@@ -1094,7 +1094,7 @@ const createStyles = (theme, isCompact) =>
       color: theme.pastBtnActiveText,
     },
     pastNoneText: {
-      fontSize: 11,
+      fontSize: 10.5,
       color: theme.textTertiary,
       fontStyle: 'italic',
     },
@@ -1102,57 +1102,57 @@ const createStyles = (theme, isCompact) =>
       width: '100%',
       borderTopWidth: 1,
       borderTopColor: theme.pastSectionBorder,
-      paddingHorizontal: 16,
-      paddingVertical: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
       backgroundColor: theme.pastBg,
     },
     pastHeaderRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 8,
+      marginBottom: 6,
     },
     pastHeader: {
-      fontSize: 11,
+      fontSize: 10.5,
       fontWeight: '700',
       color: theme.textSecondary,
       textTransform: 'uppercase',
     },
     pastHeaderNote: {
-      fontSize: 10,
+      fontSize: 9.5,
       color: theme.textTertiary,
       fontStyle: 'italic',
     },
     pastRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 5,
+      paddingVertical: 4,
       borderBottomWidth: 0.5,
       borderBottomColor: theme.pastBorder,
     },
     pastDate: {
-      fontSize: 12,
-      color: theme.pastDateText,
-      width: 85,
-    },
-    pastCourse: {
-      fontSize: 12,
-      color: theme.pastCourseText,
-      width: 60,
-    },
-    pastDist: {
-      fontSize: 12,
-      color: theme.pastDistText,
-      width: 50,
-    },
-    pastRtg: {
       fontSize: 11.5,
-      fontWeight: '600',
-      color: theme.pastRtgText,
+      color: theme.pastDateText,
       width: 80,
     },
+    pastCourse: {
+      fontSize: 11.5,
+      color: theme.pastCourseText,
+      width: 55,
+    },
+    pastDist: {
+      fontSize: 11.5,
+      color: theme.pastDistText,
+      width: 45,
+    },
+    pastRtg: {
+      fontSize: 11,
+      fontWeight: '600',
+      color: theme.pastRtgText,
+      width: 75,
+    },
     pastPos: {
-      fontSize: 12,
+      fontSize: 11.5,
       fontWeight: '600',
       color: theme.pastPosText,
       flex: 1,
@@ -1163,18 +1163,18 @@ const createStyles = (theme, isCompact) =>
       fontWeight: '700',
     },
     morePastText: {
-      fontSize: 11,
+      fontSize: 10.5,
       color: theme.textTertiary,
       fontStyle: 'italic',
-      marginTop: 8,
+      marginTop: 6,
       textAlign: 'center',
     },
     emptyContainer: {
-      padding: 30,
+      padding: 24,
       alignItems: 'center',
     },
     emptyText: {
       color: theme.textTertiary,
-      fontSize: 15,
+      fontSize: 14,
     },
   });
