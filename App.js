@@ -63,6 +63,7 @@ const getAverageRating = (horse) => {
 };
 
 const ZOOM_CONFIGS = [
+  { scale: 0.75, label: '75%' },
   { scale: 1.0, label: '100%' },
   { scale: 1.5, label: '150%' },
   { scale: 2.0, label: '200%' },
@@ -74,7 +75,7 @@ export default function App() {
 
   const systemColorScheme = useColorScheme();
   const [isDark, setIsDark] = useState(systemColorScheme === 'dark');
-  const [zoomIndex, setZoomIndex] = useState(0);
+  const [zoomIndex, setZoomIndex] = useState(1);
   const currentZoom = ZOOM_CONFIGS[zoomIndex];
   const scale = currentZoom.scale;
 
@@ -108,7 +109,7 @@ export default function App() {
       try {
         dateInputRef.current.focus();
         dateInputRef.current.click();
-      } catch (e) {}
+      } catch (e) { }
     }
   };
 
@@ -604,7 +605,7 @@ export default function App() {
                 onClick={(e) => {
                   try {
                     e.currentTarget.showPicker?.();
-                  } catch (err) {}
+                  } catch (err) { }
                 }}
                 onChange={(e) => {
                   if (e.target.value) {
