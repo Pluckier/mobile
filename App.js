@@ -407,13 +407,16 @@ export default function App() {
                       <Text style={styles.pastDate}>{run.date}</Text>
                       <Text style={styles.pastCourse}>{run.course || '-'}</Text>
                       <Text style={styles.pastDist}>{run.distance || ''}</Text>
+                      <Text style={styles.pastDist}>{run.raceClass || ''}</Text>
+                      <Text style={styles.pastDist}>{run.going || ''}</Text>
+                      <Text style={styles.pastDist}>{run.weight || ''}</Text>
                       <Text style={styles.pastDist}>{run.distBeaten || ''} l</Text>
                       <Text style={[styles.pastPos, isWin && styles.pastPosWin]}>
                         {run.position || '-'}
                       </Text>
                       <Text style={styles.pastRtg}>
                         {run.name ? `Rtg: ${run.name}` : '-'}
-                      </Text>``
+                      </Text>
                     </View>
                   );
                 })}
@@ -598,6 +601,9 @@ export default function App() {
                     <Text style={styles.pastDate}>{run.date}</Text>
                     <Text style={styles.pastCourse}>{run.course || '-'}</Text>
                     <Text style={styles.pastDist}>{run.distance || ''}</Text>
+                    <Text style={styles.pastDist}>C{run.raceClass || ''}</Text>
+                    <Text style={styles.pastDist}>{run.going || ''}</Text>
+                    <Text style={styles.pastDist}>{run.weight || ''}</Text>
                     <Text style={styles.pastDist}>{run.distBeaten || ''} l</Text>
                     <Text style={[styles.pastPos, isWin && styles.pastPosWin]}>
                       {run.position || '-'}
@@ -1257,7 +1263,7 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
       fontSize: s(11.5),
       fontWeight: '600',
       color: theme.pastPosText,
-      flex: 1,
+      width: s(45),
     },
     pastPosWin: {
       color: theme.pastPosWinText,
