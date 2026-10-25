@@ -1,8 +1,17 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Linking, Platform } from 'react-native';
 
 export default function PastRunsPanel({ rows, styles, itemName = null }) {
   if (!rows || rows.length === 0) return null;
+
+  const handleOpenUrl = (url) => {
+    if (!url) return;
+    if (Platform.OS === 'web') {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      Linking.openURL(url).catch((err) => console.error('Failed to open URL:', err));
+    }
+  };
 
   return (
     <View style={styles.pastSection}>
@@ -17,7 +26,23 @@ export default function PastRunsPanel({ rows, styles, itemName = null }) {
 
         return (
           <View key={`${run.date}-${run.time || rIdx}`} style={styles.pastRow}>
-            <Text style={styles.pastDate}>{run.date}</Text>
+            {run.url ? (
+              <Text
+                style={[styles.pastDate, styles.pastDateLink]}
+                accessibilityRole="link"
+                href={run.url}
+                hrefAttrs={{ target: '_blank', rel: 'noopener noreferrer' }}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    handleOpenUrl(run.url);
+                  }
+                }}
+              >
+                {run.date}
+              </Text>
+            ) : (
+              <Text style={styles.pastDate}>{run.date}</Text>
+            )}
             <Text style={styles.pastCourse}>{run.course || '-'}</Text>
             <Text style={styles.pastDist}>{run.distance || ''}</Text>
             <Text style={styles.pastDist}>C{run.raceClass || ''}</Text>

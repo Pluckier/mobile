@@ -147,6 +147,7 @@ export const createStyles = (theme, isCompact, scale = 1.0) => {
     pastHeader: { fontSize: s(10.5), fontWeight: '700', color: theme.textSecondary, textTransform: 'uppercase' },
     pastRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: s(4), borderBottomWidth: 0.5, borderBottomColor: theme.pastBorder },
     pastDate: { fontSize: s(11.5), color: theme.pastDateText, width: s(80) },
+    pastDateLink: { color: theme.navCounter, textDecorationLine: 'underline', ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}) },
     pastCourse: { fontSize: s(11.5), color: theme.pastCourseText, width: s(55) },
     pastDist: { fontSize: s(11.5), color: theme.pastDistText, width: s(45) },
     pastRtg: { fontSize: s(11), fontWeight: '600', color: theme.pastRtgText, width: s(75) },
