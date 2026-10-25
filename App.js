@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,13 +15,27 @@ import {
   Platform,
 } from 'react-native';
 
-const getFormattedToday = () => {
-  const d = new Date();
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = d.getFullYear();
+const formatDateToDDMMYYYY = (d) => {
+  if (!d) return '';
+  const dateObj = d instanceof Date ? d : new Date(d);
+  if (isNaN(dateObj.getTime())) return '';
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const year = dateObj.getFullYear();
   return `${day}-${month}-${year}`;
 };
+
+const formatDateToYYYYMMDD = (d) => {
+  if (!d) return '';
+  const dateObj = d instanceof Date ? d : new Date(d);
+  if (isNaN(dateObj.getTime())) return '';
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const year = dateObj.getFullYear();
+  return `${year}-${month}-${day}`;
+};
+
+const getFormattedToday = () => formatDateToDDMMYYYY(new Date());
 
 // Check if a horse is a non-runner
 const isHorseNR = (horse) => {
@@ -123,6 +137,7 @@ export default function App() {
   const scale = currentZoom.scale;
 
   const [races, setRaces] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [selectedRaceIndex, setSelectedRaceIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -136,7 +151,32 @@ export default function App() {
     setZoomIndex((prev) => (prev + 1) % ZOOM_CONFIGS.length);
   };
 
-  const fetchRaces = useCallback(async (isRefresh = false) => {
+  const dateInputRef = useRef(null);
+
+  const handleOpenDatePicker = () => {
+    if (dateInputRef.current) {
+      if (typeof dateInputRef.current.showPicker === 'function') {
+        try {
+          dateInputRef.current.showPicker();
+          return;
+        } catch (e) {
+          // Fallback if showPicker throws
+        }
+      }
+      try {
+        dateInputRef.current.focus();
+        dateInputRef.current.click();
+      } catch (e) {}
+    }
+  };
+
+  const handleDateSelect = (newDate) => {
+    if (newDate instanceof Date && !isNaN(newDate.getTime())) {
+      setSelectedDate(newDate);
+    }
+  };
+
+  const fetchRaces = useCallback(async (targetDate = selectedDate, isRefresh = false) => {
     if (isRefresh) {
       setRefreshing(true);
     } else {
@@ -145,8 +185,8 @@ export default function App() {
     setError(null);
 
     try {
-      const todayStr = getFormattedToday();
-      const url = `https://www.pluckier.co.uk/${todayStr}-races.json`;
+      const dateStr = formatDateToDDMMYYYY(targetDate);
+      const url = `https://www.pluckier.co.uk/${dateStr}-races.json`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -156,24 +196,24 @@ export default function App() {
       const data = await response.json();
       const raceList = Array.isArray(data) ? data : [];
       setRaces(raceList);
-      if (raceList.length > 0) {
-        setSelectedRaceIndex((prev) => (prev < raceList.length ? prev : 0));
-      }
+      setSelectedRaceIndex(0);
+      setExpandedHorse(null);
     } catch (err) {
       console.error('Error fetching race cards:', err);
-      setError(err.message || 'Unable to load races for today');
+      setError(err.message || 'Unable to load races for this date');
+      setRaces([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [selectedDate]);
 
   useEffect(() => {
-    fetchRaces();
-  }, [fetchRaces]);
+    fetchRaces(selectedDate);
+  }, [selectedDate]);
 
   const onRefresh = () => {
-    fetchRaces(true);
+    fetchRaces(selectedDate, true);
   };
 
   const selectedRace = races[selectedRaceIndex] || null;
@@ -220,27 +260,6 @@ export default function App() {
     }
   };
 
-  if (loading && !refreshing) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={theme.navBtnBg} />
-        <Text style={styles.loadingText}>Fetching today's race cards...</Text>
-      </View>
-    );
-  }
-
-  if (error && races.length === 0) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.errorIcon}>⚠️</Text>
-        <Text style={styles.errorTitle}>Could not load race cards</Text>
-        <Text style={styles.errorMessage}>{error}</Text>
-        <TouchableOpacity style={styles.retryBtn} onPress={() => fetchRaces()}>
-          <Text style={styles.retryBtnText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   const renderHorseRows = () => {
     if (horses.length === 0) {
@@ -628,7 +647,44 @@ export default function App() {
       {/* App Header Bar */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.title}>{getFormattedToday()}</Text>
+          <TouchableOpacity
+            style={styles.datePickerWrapper}
+            onPress={handleOpenDatePicker}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.title}>
+              📅 {formatDateToDDMMYYYY(selectedDate)}
+            </Text>
+            {Platform.OS === 'web' && (
+              <input
+                ref={dateInputRef}
+                type="date"
+                value={formatDateToYYYYMMDD(selectedDate)}
+                onClick={(e) => {
+                  try {
+                    e.currentTarget.showPicker?.();
+                  } catch (err) {}
+                }}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    const [y, m, d] = e.target.value.split('-').map(Number);
+                    handleDateSelect(new Date(y, m - 1, d));
+                  }
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  opacity: 0,
+                  cursor: 'pointer',
+                }}
+                tabIndex={-1}
+                aria-label="Select Race Date"
+              />
+            )}
+          </TouchableOpacity>
           <View style={styles.headerActions}>
             <TouchableOpacity
               style={styles.zoomToggleBtn}
@@ -696,24 +752,48 @@ export default function App() {
       )}
 
       {/* Main Content Area */}
-      <ScrollView
-        style={styles.tableScroll}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.navBtnBg]} />
-        }
-      >
-        {isCompact ? (
-          // Condensed view (< 650px): Full-width vertical card list
-          <View style={styles.compactWrapper}>
-            {renderHorseRows()}
+      {loading && !refreshing ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={theme.navBtnBg} />
+          <Text style={styles.loadingText}>Fetching race cards...</Text>
+        </View>
+      ) : error && races.length === 0 ? (
+        <View style={styles.center}>
+          <Text style={styles.errorIcon}>⚠️</Text>
+          <Text style={styles.errorTitle}>Could not load race cards</Text>
+          <Text style={styles.errorMessage}>{error}</Text>
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+            <TouchableOpacity style={styles.retryBtn} onPress={() => fetchRaces(selectedDate)}>
+              <Text style={styles.retryBtnText}>Retry</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.retryBtn, { backgroundColor: theme.isDark ? '#27272a' : '#5f6368' }]}
+              onPress={() => setSelectedDate(new Date())}
+            >
+              <Text style={styles.retryBtnText}>Today</Text>
+            </TouchableOpacity>
           </View>
-        ) : (
-          // Wide view (>= 650px): Full width table spanning 100% of the screen
-          <View style={styles.wideWrapper}>
-            {renderHorseRows()}
-          </View>
-        )}
-      </ScrollView>
+        </View>
+      ) : (
+        <ScrollView
+          style={styles.tableScroll}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.navBtnBg]} />
+          }
+        >
+          {isCompact ? (
+            // Condensed view (< 650px): Full-width vertical card list
+            <View style={styles.compactWrapper}>
+              {renderHorseRows()}
+            </View>
+          ) : (
+            // Wide view (>= 650px): Full width table spanning 100% of the screen
+            <View style={styles.wideWrapper}>
+              {renderHorseRows()}
+            </View>
+          )}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -801,6 +881,15 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
       fontSize: 11.5,
       fontWeight: '700',
       color: theme.toggleBtnText,
+    },
+    datePickerWrapper: {
+      position: 'relative',
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 8,
     },
     title: {
       fontSize: 16,
