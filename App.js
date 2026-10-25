@@ -675,14 +675,8 @@ export default function App() {
             </Text>
             {(selectedRace?.distance || selectedRace?.going) ? (
               <Text style={styles.navRaceSubtitle} numberOfLines={1}>
-                {selectedRace?.distance ? selectedRace.distance : ''}
-                {selectedRace?.distance && selectedRace?.going ? ' • ' : ''}
-                {selectedRace?.going ? `Going: ${selectedRace.going}` : ''}
-              </Text>
-            ) : null}
-            {selectedRace?.detail ? (
-              <Text style={styles.navRaceDetail} numberOfLines={2}>
                 {selectedRace.detail}
+                {selectedRace?.going ? ` ${selectedRace.going}` : ''}
               </Text>
             ) : null}
           </View>
@@ -829,19 +823,18 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
     },
     navBar: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'stretch',
       justifyContent: 'space-between',
       backgroundColor: theme.navBg,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
       borderBottomWidth: 1,
       borderBottomColor: theme.navBorder,
     },
     navBtn: {
       backgroundColor: theme.navBtnBg,
-      paddingVertical: 6,
-      paddingHorizontal: 14,
-      borderRadius: 6,
+      paddingHorizontal: 16,
+      alignSelf: 'stretch',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     navBtnDisabled: {
       backgroundColor: theme.navBtnDisabledBg,
@@ -856,8 +849,10 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
     },
     navCenter: {
       alignItems: 'center',
+      justifyContent: 'center',
       flex: 1,
       marginHorizontal: 8,
+      paddingVertical: 8,
     },
     navRaceCounter: {
       fontSize: 11,
