@@ -268,7 +268,7 @@ export default function App() {
 
                 {/* 2. Number */}
                 <Text style={styles.compactNumberText}>
-                  {horseNum}
+                  {`${horseNum}.`}
                   {item.draw ? <Text style={styles.drawText}>({item.draw})</Text> : null}
                 </Text>
 
@@ -418,7 +418,7 @@ export default function App() {
             {/* 2. Number */}
             <View style={styles.colNumber}>
               <Text style={styles.numberText}>
-                {horseNum}
+                {`${horseNum}.`}
                 {item.draw ? <Text style={styles.drawText}>({item.draw})</Text> : null}
               </Text>
             </View>
@@ -440,14 +440,14 @@ export default function App() {
             {/* 5. Last Run */}
             <View style={styles.colLastRun}>
               <Text style={styles.lastRunText}>
-                {item.lastRun ? `${item.lastRun}d` : '-'}
+                {item.lastRun ? `${item.lastRun}` : '-'}
               </Text>
             </View>
 
             {/* 6. Age */}
             <View style={styles.colAge}>
               <Text style={styles.ageText}>
-                {item.age ? `${item.age}y` : '-'}
+                {item.age ? `${item.age}yo` : '-'}
               </Text>
             </View>
 
@@ -505,7 +505,7 @@ export default function App() {
                       isExpanded && styles.pastBtnTextActive,
                     ]}
                   >
-                    {isExpanded ? '▲ hide' : `${pastRuns.length} ▼`}
+                    {isExpanded ? '▲' : `${pastRuns.length} ▼`}
                   </Text>
                 </View>
               ) : (
