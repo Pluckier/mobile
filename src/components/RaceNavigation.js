@@ -25,7 +25,7 @@ export default function RaceNavigation({
 
         <View style={styles.navCenter}>
           <Text style={styles.navRaceCounter}>
-            Race {selectedRaceIndex + 1} of {races.length}
+            {selectedRaceIndex + 1} / {races.length}
           </Text>
         </View>
 
