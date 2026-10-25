@@ -1,56 +1,36 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text } from 'react-native';
 
-export default function RaceNavigation({
-  styles,
-  races,
-  selectedRaceIndex,
-  selectedRace,
-  onPrevRace,
-  onNextRace,
-}) {
+export default function PastRunsPanel({ rows, styles, itemName = null }) {
+  if (!rows || rows.length === 0) return null;
+
   return (
-    <View style={styles.navBar}>
-      <TouchableOpacity
-        style={[styles.navBtn, selectedRaceIndex === 0 && styles.navBtnDisabled]}
-        onPress={onPrevRace}
-        disabled={selectedRaceIndex === 0}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.navBtnText, selectedRaceIndex === 0 && styles.navBtnTextDisabled]}>
-          ◀ Prev
+    <View style={styles.pastSection}>
+      <View style={styles.pastHeaderRow}>
+        <Text style={styles.pastHeader}>
+          {itemName ? `Past Performance History (${itemName})` : 'Past Performance History'}
         </Text>
-      </TouchableOpacity>
-
-      <View style={styles.navCenter}>
-        <Text style={styles.navRaceCounter}>Race {selectedRaceIndex + 1} of {races.length}</Text>
-        <Text style={styles.navRaceSummary} numberOfLines={1}>
-          {selectedRace?.time} {selectedRace?.place}
-        </Text>
-        {(selectedRace?.distance || selectedRace?.going) && (
-          <Text style={styles.navRaceSubtitle} numberOfLines={1}>
-            {selectedRace.detail}
-            {selectedRace?.going ? ` ${selectedRace.going}` : ''}
-          </Text>
-        )}
       </View>
 
-      <TouchableOpacity
-        style={[styles.navBtn, selectedRaceIndex === races.length - 1 && styles.navBtnDisabled]}
-        onPress={onNextRace}
-        disabled={selectedRaceIndex === races.length - 1}
-        activeOpacity={0.7}
-      >
-        <Text
-          style={[
-            styles.navBtnText,
-            selectedRaceIndex === races.length - 1 && styles.navBtnTextDisabled,
-          ]}
-        >
-          Next ▶
-        </Text>
-      </TouchableOpacity>
+      {rows.slice(0, 12).map((run, rIdx) => {
+        const isWin = String(run.position || '').trim().split('/')[0] === '1';
+
+        return (
+          <View key={`${run.date}-${run.time || rIdx}`} style={styles.pastRow}>
+            <Text style={styles.pastDate}>{run.date}</Text>
+            <Text style={styles.pastCourse}>{run.course || '-'}</Text>
+            <Text style={styles.pastDist}>{run.distance || ''}</Text>
+            <Text style={styles.pastDist}>C{run.raceClass || ''}</Text>
+            <Text style={styles.pastDist}>{run.going || ''}</Text>
+            <Text style={styles.pastDist}>{run.weight || ''}</Text>
+            <Text style={styles.pastDist}>{run.distBeaten || ''} l</Text>
+            <Text style={[styles.pastPos, isWin && styles.pastPosWin]}>
+              {run.position || '-'}
+            </Text>
+            <Text style={styles.pastRtg}>{run.name ? `Rtg: ${run.name}` : '-'}</Text>
+          </View>
+        );
+      })}
     </View>
   );
 }
-

@@ -1,48 +1,98 @@
-export const isHorseNR = (horse) => {
-  if (!horse) return false;
-  if (horse.number === 'NR' || horse.status === 'NR') return true;
+import React, { useRef } from 'react';
+import { View, Text, TouchableOpacity, Platform } from 'react-native';
 
-  const odds = horse.odds || [];
-  if (odds.length > 0) {
-    const last = odds[odds.length - 1];
-    return last === 'NR' || last === 'null' || last === 'Non-Runner';
-  }
+import { formatDateToDDMMYYYY, formatDateToYYYYMMDD } from '../utils/dateUtils';
 
-  return false;
-};
+export default function RaceHeader({
+  styles,
+  selectedDate,
+  onDateChange,
+  isDark,
+  onToggleTheme,
+  onToggleZoom,
+  zoomLabel,
+}) {
+  const dateInputRef = useRef(null);
 
-export const getAverageRating = (horse) => {
-  const runs = (horse?.past || []).slice(0, 3);
-  if (runs.length === 0) return 0;
+  const handleOpenDatePicker = () => {
+    if (dateInputRef.current) {
+      if (typeof dateInputRef.current.showPicker === 'function') {
+        try {
+          dateInputRef.current.showPicker();
+          return;
+        } catch (e) {
+          // ignore and fall back as needed
+        }
+      }
 
-  const validRatings = runs
-    .map((r) => parseFloat(r?.name))
-    .filter((val) => !isNaN(val) && val > 0);
-
-  if (validRatings.length === 0) return 0;
-
-  const total = validRatings.reduce((acc, curr) => acc + curr, 0);
-  return total / validRatings.length;
-};
-
-export const sortHorses = (horses = []) => {
-  return [...horses].sort((a, b) => {
-    const isNRA = isHorseNR(a);
-    const isNRB = isHorseNR(b);
-
-    if (isNRA !== isNRB) {
-      return isNRA ? 1 : -1;
+      try {
+        dateInputRef.current.focus();
+        dateInputRef.current.click();
+      } catch (e) {
+        // ignore click fallback errors
+      }
     }
+  };
 
-    const ratingA = getAverageRating(a);
-    const ratingB = getAverageRating(b);
-    if (ratingB !== ratingA) {
-      return ratingB - ratingA;
-    }
+  return (
+    <View style={styles.header}>
+      <View style={styles.headerTop}>
+        <TouchableOpacity
+          style={styles.datePickerWrapper}
+          onPress={handleOpenDatePicker}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.title}>📅 {formatDateToDDMMYYYY(selectedDate)}</Text>
 
-    const numA = parseInt(a.number, 10) || 999;
-    const numB = parseInt(b.number, 10) || 999;
-    return numA - numB;
-  });
-};
+          {Platform.OS === 'web' && (
+            <input
+              ref={dateInputRef}
+              type="date"
+              value={formatDateToYYYYMMDD(selectedDate)}
+              onClick={(e) => {
+                try {
+                  e.currentTarget.showPicker?.();
+                } catch (err) {}
+              }}
+              onChange={(e) => {
+                if (e.target.value) {
+                  const [y, m, d] = e.target.value.split('-').map(Number);
+                  onDateChange(new Date(y, m - 1, d));
+                }
+              }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                opacity: 0,
+                cursor: 'pointer',
+              }}
+              tabIndex={-1}
+              aria-label="Select Race Date"
+            />
+          )}
+        </TouchableOpacity>
 
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={styles.zoomToggleBtn}
+            onPress={onToggleZoom}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.zoomToggleText}>🔍 {zoomLabel}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.themeToggleBtn}
+            onPress={onToggleTheme}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.themeToggleText}>{isDark ? '☀️ Light' : '🌙 Dark'}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+}

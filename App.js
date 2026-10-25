@@ -132,7 +132,11 @@ export default function App() {
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[theme.navBtnBg]} />
           }
         >
-          {isCompact ? (
+          {horses.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No horses listed for this race card.</Text>
+            </View>
+          ) : isCompact ? (
             <View style={styles.compactWrapper}>
               {horses.map((item, index) => (
                 <HorseRow

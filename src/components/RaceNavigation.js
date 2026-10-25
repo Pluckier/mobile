@@ -1,99 +1,57 @@
-import React, { useRef } from 'react';
-import { View, Text, TouchableOpacity, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 
-import { formatDateToDDMMYYYY, formatDateToYYYYMMDD } from '../utils/dateUtils';
-
-export default function RaceHeader({
+export default function RaceNavigation({
   styles,
-  selectedDate,
-  onDateChange,
-  isDark,
-  onToggleTheme,
-  onToggleZoom,
-  zoomLabel,
+  races,
+  selectedRaceIndex,
+  selectedRace,
+  onPrevRace,
+  onNextRace,
 }) {
-  const dateInputRef = useRef(null);
-
-  const handleOpenDatePicker = () => {
-    if (dateInputRef.current) {
-      if (typeof dateInputRef.current.showPicker === 'function') {
-        try {
-          dateInputRef.current.showPicker();
-          return;
-        } catch (e) {
-          // ignore and fall back as needed
-        }
-      }
-
-      try {
-        dateInputRef.current.focus();
-        dateInputRef.current.click();
-      } catch (e) {
-        // ignore click fallback errors
-      }
-    }
-  };
-
   return (
-    <View style={styles.header}>
-      <View style={styles.headerTop}>
-        <TouchableOpacity
-          style={styles.datePickerWrapper}
-          onPress={handleOpenDatePicker}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.title}>📅 {formatDateToDDMMYYYY(selectedDate)}</Text>
+    <View style={styles.navBar}>
+      <TouchableOpacity
+        style={[styles.navBtn, selectedRaceIndex === 0 && styles.navBtnDisabled]}
+        onPress={onPrevRace}
+        disabled={selectedRaceIndex === 0}
+        activeOpacity={0.7}
+      >
+        <Text style={[styles.navBtnText, selectedRaceIndex === 0 && styles.navBtnTextDisabled]}>
+          ◀ Prev
+        </Text>
+      </TouchableOpacity>
 
-          {Platform.OS === 'web' && (
-            <input
-              ref={dateInputRef}
-              type="date"
-              value={formatDateToYYYYMMDD(selectedDate)}
-              onClick={(e) => {
-                try {
-                  e.currentTarget.showPicker?.();
-                } catch (err) {}
-              }}
-              onChange={(e) => {
-                if (e.target.value) {
-                  const [y, m, d] = e.target.value.split('-').map(Number);
-                  onDateChange(new Date(y, m - 1, d));
-                }
-              }}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                opacity: 0,
-                cursor: 'pointer',
-              }}
-              tabIndex={-1}
-              aria-label="Select Race Date"
-            />
-          )}
-        </TouchableOpacity>
-
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.zoomToggleBtn}
-            onPress={onToggleZoom}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.zoomToggleText}>🔍 {zoomLabel}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.themeToggleBtn}
-            onPress={onToggleTheme}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.themeToggleText}>{isDark ? '☀️ Light' : '🌙 Dark'}</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.navCenter}>
+        <Text style={styles.navRaceCounter}>
+          Race {selectedRaceIndex + 1} of {races.length}
+        </Text>
+        <Text style={styles.navRaceSummary} numberOfLines={1}>
+          {selectedRace?.time} {selectedRace?.place}
+        </Text>
+        {(selectedRace?.distance || selectedRace?.going) ? (
+          <Text style={styles.navRaceSubtitle} numberOfLines={1}>
+            {selectedRace.detail}
+            {selectedRace?.going ? ` ${selectedRace.going}` : ''}
+          </Text>
+        ) : null}
       </View>
+
+      <TouchableOpacity
+        style={[styles.navBtn, selectedRaceIndex === races.length - 1 && styles.navBtnDisabled]}
+        onPress={onNextRace}
+        disabled={selectedRaceIndex === races.length - 1}
+        activeOpacity={0.7}
+      >
+        <Text
+          style={[
+            styles.navBtnText,
+            selectedRaceIndex === races.length - 1 && styles.navBtnTextDisabled,
+          ]}
+        >
+          Next ▶
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
-
