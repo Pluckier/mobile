@@ -11,6 +11,7 @@ import {
   RefreshControl,
   Image,
   useColorScheme,
+  useWindowDimensions,
 } from 'react-native';
 
 const getFormattedToday = () => {
@@ -87,9 +88,13 @@ const getTheme = (isDark) => ({
   toggleBtnText: '#ffffff',
   statusBar: 'light-content',
   statusBg: isDark ? '#1a2332' : '#1a73e8',
+  pillBg: isDark ? '#262626' : '#f1f3f4',
 });
 
 export default function App() {
+  const { width } = useWindowDimensions();
+  const isCompact = width < 650;
+
   const systemColorScheme = useColorScheme();
   const [isDark, setIsDark] = useState(systemColorScheme === 'dark');
   const [races, setRaces] = useState([]);
@@ -100,7 +105,7 @@ export default function App() {
   const [expandedHorse, setExpandedHorse] = useState(null);
 
   const theme = useMemo(() => getTheme(isDark), [isDark]);
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(() => createStyles(theme, isCompact), [theme, isCompact]);
 
   const fetchRaces = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -200,6 +205,338 @@ export default function App() {
     );
   }
 
+  const renderHorseRows = () => {
+    if (horses.length === 0) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No horses listed for this race card.</Text>
+        </View>
+      );
+    }
+
+    return horses.map((item, index) => {
+      const horseNum = item.number || index + 1;
+      const pastRuns = item.past || [];
+      const isExpanded = expandedHorse === item.name;
+      const avgRating = getAverageRating(item);
+      const latestOdd =
+        Array.isArray(item.odds) && item.odds.length > 0
+          ? item.odds[item.odds.length - 1]
+          : null;
+      const isNR = latestOdd === 'NR' || latestOdd === 'null';
+      const isOddRow = index % 2 === 1;
+
+      if (isCompact) {
+        // Phone layout (< 650px): Line 1 (Horse identity) + Line 2 (Connections, Rating, Odds & Past)
+        return (
+          <View key={`${item.name}-${item.number || index}`} style={styles.rowContainer}>
+            <TouchableOpacity
+              style={[styles.compactRow, isOddRow && styles.rowAlt]}
+              onPress={() => toggleExpand(item.name)}
+              activeOpacity={0.7}
+            >
+              {/* LINE 1: silks, number, form, name, lastRun, age, weight */}
+              <View style={styles.compactLine1}>
+                {/* 1. Silks */}
+                <View style={styles.compactSilksCol}>
+                  {item.silks ? (
+                    <Image
+                      source={{ uri: item.silks }}
+                      style={styles.silksImage}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <View style={styles.silksPlaceholder}>
+                      <Text style={styles.silksPlaceholderText}>🏇</Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* 2. Number */}
+                <Text style={styles.compactNumberText}>
+                  {horseNum}
+                  {item.draw ? <Text style={styles.drawText}>({item.draw})</Text> : null}
+                </Text>
+
+                {/* 3. Form */}
+                <View style={styles.compactFormBadge}>
+                  <Text style={styles.formText} numberOfLines={1}>
+                    {item.form || '-'}
+                  </Text>
+                </View>
+
+                {/* 4. Name */}
+                <Text style={styles.compactNameText} numberOfLines={1}>
+                  {item.name}
+                </Text>
+
+                {/* 5. Last Run */}
+                <Text style={styles.compactMetaPill}>
+                  {item.lastRun ? `${item.lastRun}d` : '-'}
+                </Text>
+
+                {/* 6. Age */}
+                <Text style={styles.compactMetaPill}>
+                  {item.age ? `${item.age}y` : '-'}
+                </Text>
+
+                {/* 7. Weight */}
+                <Text style={styles.compactWeightText}>
+                  {item.weight || '-'}
+                </Text>
+              </View>
+
+              {/* LINE 2: jockey and trainer together above and below each other, average rating, latest odd, past runs */}
+              <View style={styles.compactLine2}>
+                {/* 8. Jockey and Trainer stacked */}
+                <View style={styles.compactConnectionsCol}>
+                  <Text style={styles.jockeyText} numberOfLines={1}>
+                    {item.jockey ? `J: ${item.jockey}` : '-'}
+                  </Text>
+                  <Text style={styles.trainerText} numberOfLines={1}>
+                    {item.trainer ? `T: ${item.trainer}` : '-'}
+                  </Text>
+                </View>
+
+                {/* 9, 10, 11: Rating, Odds, Past runs */}
+                <View style={styles.compactRightActions}>
+                  {/* 9. Average Rating */}
+                  <View style={[styles.ratingPill, avgRating > 0 && styles.ratingPillActive]}>
+                    <Text
+                      style={[
+                        styles.ratingPillText,
+                        avgRating > 0 && styles.ratingPillTextActive,
+                      ]}
+                    >
+                      {avgRating > 0 ? `${Math.round(avgRating)}` : 'Rtg: -'}
+                    </Text>
+                  </View>
+
+                  {/* 10. Latest Odd */}
+                  {latestOdd ? (
+                    <View style={[styles.oddsPill, isNR && styles.oddsPillNR]}>
+                      <Text style={[styles.oddsPillText, isNR && styles.oddsPillTextNR]}>
+                        {isNR ? 'NR' : latestOdd}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.oddsDash}>-</Text>
+                  )}
+
+                  {/* 11. Past runs summary / details toggle */}
+                  {pastRuns.length > 0 ? (
+                    <View style={[styles.pastBtn, isExpanded && styles.pastBtnActive]}>
+                      <Text
+                        style={[
+                          styles.pastBtnText,
+                          isExpanded && styles.pastBtnTextActive,
+                        ]}
+                      >
+                        {isExpanded ? '▲ hide' : `${pastRuns.length} ▼`}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.pastNoneText}>none</Text>
+                  )}
+                </View>
+              </View>
+            </TouchableOpacity>
+
+            {/* Collapsible Past Runs History Table */}
+            {isExpanded && pastRuns.length > 0 && (
+              <View style={styles.pastSection}>
+                <View style={styles.pastHeaderRow}>
+                  <Text style={styles.pastHeader}>
+                    Past Performance History ({item.name})
+                  </Text>
+                  <Text style={styles.pastHeaderNote}>run.name = rating</Text>
+                </View>
+                {pastRuns.slice(0, 6).map((run, rIdx) => {
+                  const isWin = String(run.position || '').trim().split('/')[0] === '1';
+                  return (
+                    <View key={`${run.date}-${run.time || rIdx}`} style={styles.pastRow}>
+                      <Text style={styles.pastDate}>{run.date}</Text>
+                      <Text style={styles.pastCourse}>{run.course || '-'}</Text>
+                      <Text style={styles.pastDist}>{run.distance || ''}</Text>
+                      <Text style={styles.pastRtg}>
+                        {run.name ? `Rtg: ${run.name}` : '-'}
+                      </Text>
+                      <Text style={[styles.pastPos, isWin && styles.pastPosWin]}>
+                        {run.position || '-'}
+                      </Text>
+                    </View>
+                  );
+                })}
+                {pastRuns.length > 6 && (
+                  <Text style={styles.morePastText}>
+                    + {pastRuns.length - 6} earlier runs
+                  </Text>
+                )}
+              </View>
+            )}
+          </View>
+        );
+      }
+
+      // Desktop / Tablet layout (>= 650px): All 11 items on one single line
+      return (
+        <View key={`${item.name}-${item.number || index}`} style={styles.rowContainer}>
+          <TouchableOpacity
+            style={[styles.singleLineRow, isOddRow && styles.rowAlt]}
+            onPress={() => toggleExpand(item.name)}
+            activeOpacity={0.7}
+          >
+            {/* 1. Silks */}
+            <View style={styles.colSilks}>
+              {item.silks ? (
+                <Image
+                  source={{ uri: item.silks }}
+                  style={styles.silksImage}
+                  resizeMode="contain"
+                />
+              ) : (
+                <View style={styles.silksPlaceholder}>
+                  <Text style={styles.silksPlaceholderText}>🏇</Text>
+                </View>
+              )}
+            </View>
+
+            {/* 2. Number */}
+            <View style={styles.colNumber}>
+              <Text style={styles.numberText}>
+                {horseNum}
+                {item.draw ? <Text style={styles.drawText}>({item.draw})</Text> : null}
+              </Text>
+            </View>
+
+            {/* 3. Form */}
+            <View style={styles.colForm}>
+              <Text style={styles.formText} numberOfLines={1}>
+                {item.form || '-'}
+              </Text>
+            </View>
+
+            {/* 4. Name */}
+            <View style={styles.colName}>
+              <Text style={styles.nameText} numberOfLines={1}>
+                {item.name}
+              </Text>
+            </View>
+
+            {/* 5. Last Run */}
+            <View style={styles.colLastRun}>
+              <Text style={styles.lastRunText}>
+                {item.lastRun ? `${item.lastRun}d` : '-'}
+              </Text>
+            </View>
+
+            {/* 6. Age */}
+            <View style={styles.colAge}>
+              <Text style={styles.ageText}>
+                {item.age ? `${item.age}y` : '-'}
+              </Text>
+            </View>
+
+            {/* 7. Weight */}
+            <View style={styles.colWeight}>
+              <Text style={styles.weightText}>
+                {item.weight || '-'}
+              </Text>
+            </View>
+
+            {/* 8. Jockey and Trainer together above and below each other */}
+            <View style={styles.colConnections}>
+              <Text style={styles.jockeyText} numberOfLines={1}>
+                {item.jockey ? `J: ${item.jockey}` : '-'}
+              </Text>
+              <Text style={styles.trainerText} numberOfLines={1}>
+                {item.trainer ? `T: ${item.trainer}` : '-'}
+              </Text>
+            </View>
+
+            {/* 9. Average Rating */}
+            <View style={styles.colRating}>
+              <View style={[styles.ratingPill, avgRating > 0 && styles.ratingPillActive]}>
+                <Text
+                  style={[
+                    styles.ratingPillText,
+                    avgRating > 0 && styles.ratingPillTextActive,
+                  ]}
+                >
+                  {avgRating > 0 ? Math.round(avgRating) : '-'}
+                </Text>
+              </View>
+            </View>
+
+            {/* 10. Latest Odd */}
+            <View style={styles.colOdds}>
+              {latestOdd ? (
+                <View style={[styles.oddsPill, isNR && styles.oddsPillNR]}>
+                  <Text style={[styles.oddsPillText, isNR && styles.oddsPillTextNR]}>
+                    {isNR ? 'NR' : latestOdd}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={styles.oddsDash}>-</Text>
+              )}
+            </View>
+
+            {/* 11. Past runs summary / details toggle */}
+            <View style={styles.colPast}>
+              {pastRuns.length > 0 ? (
+                <View style={[styles.pastBtn, isExpanded && styles.pastBtnActive]}>
+                  <Text
+                    style={[
+                      styles.pastBtnText,
+                      isExpanded && styles.pastBtnTextActive,
+                    ]}
+                  >
+                    {isExpanded ? '▲ hide' : `${pastRuns.length} ▼`}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={styles.pastNoneText}>none</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+
+          {/* Collapsible Past Runs History Table */}
+          {isExpanded && pastRuns.length > 0 && (
+            <View style={styles.pastSection}>
+              <View style={styles.pastHeaderRow}>
+                <Text style={styles.pastHeader}>
+                  Past Performance History ({item.name})
+                </Text>
+                <Text style={styles.pastHeaderNote}>run.name = rating</Text>
+              </View>
+              {pastRuns.slice(0, 6).map((run, rIdx) => {
+                const isWin = String(run.position || '').trim().split('/')[0] === '1';
+                return (
+                  <View key={`${run.date}-${run.time || rIdx}`} style={styles.pastRow}>
+                    <Text style={styles.pastDate}>{run.date}</Text>
+                    <Text style={styles.pastCourse}>{run.course || '-'}</Text>
+                    <Text style={styles.pastDist}>{run.distance || ''}</Text>
+                    <Text style={styles.pastRtg}>
+                      {run.name ? `Rtg: ${run.name}` : '-'}
+                    </Text>
+                    <Text style={[styles.pastPos, isWin && styles.pastPosWin]}>
+                      {run.position || '-'}
+                    </Text>
+                  </View>
+                );
+              })}
+              {pastRuns.length > 6 && (
+                <Text style={styles.morePastText}>
+                  + {pastRuns.length - 6} earlier runs
+                </Text>
+              )}
+            </View>
+          )}
+        </View>
+      );
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle={theme.statusBar} backgroundColor={theme.statusBg} />
@@ -274,217 +611,49 @@ export default function App() {
         </View>
       )}
 
-      {/* Single-Row Horse Racecard Table */}
+      {/* Main Content Area */}
       <ScrollView
         style={styles.tableScroll}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.navBtnBg]} />
         }
       >
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={true}
-          contentContainerStyle={styles.horizontalScrollContent}
-        >
-          <View style={styles.tableWrapper}>
-            {/* Table Column Headers */}
-            <View style={styles.tableHeaderRow}>
-              <Text style={[styles.thText, styles.colSilks]}>Silks</Text>
-              <Text style={[styles.thText, styles.colNumber]}>#</Text>
-              <Text style={[styles.thText, styles.colForm]}>Form</Text>
-              <Text style={[styles.thText, styles.colName]}>Horse</Text>
-              <Text style={[styles.thText, styles.colLastRun]}>LR</Text>
-              <Text style={[styles.thText, styles.colAge]}>Age</Text>
-              <Text style={[styles.thText, styles.colWeight]}>Wgt</Text>
-              <Text style={[styles.thText, styles.colConnections]}>Jockey / Trainer</Text>
-              <Text style={[styles.thText, styles.colRating]}>Rtg</Text>
-              <Text style={[styles.thText, styles.colOdds]}>Odds</Text>
-              <Text style={[styles.thText, styles.colPast]}>Past</Text>
-            </View>
-
-            {/* Horse Rows */}
-            {horses.length === 0 ? (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No horses listed for this race card.</Text>
-              </View>
-            ) : (
-              horses.map((item, index) => {
-                const horseNum = item.number || index + 1;
-                const pastRuns = item.past || [];
-                const isExpanded = expandedHorse === item.name;
-                const avgRating = getAverageRating(item);
-                const latestOdd =
-                  Array.isArray(item.odds) && item.odds.length > 0
-                    ? item.odds[item.odds.length - 1]
-                    : null;
-                const isNR = latestOdd === 'NR' || latestOdd === 'null';
-                const isOddRow = index % 2 === 1;
-
-                return (
-                  <View key={`${item.name}-${item.number || index}`} style={styles.rowContainer}>
-                    <TouchableOpacity
-                      style={[styles.singleLineRow, isOddRow && styles.rowAlt]}
-                      onPress={() => toggleExpand(item.name)}
-                      activeOpacity={0.7}
-                    >
-                      {/* 1. Silks */}
-                      <View style={styles.colSilks}>
-                        {item.silks ? (
-                          <Image
-                            source={{ uri: item.silks }}
-                            style={styles.silksImage}
-                            resizeMode="contain"
-                          />
-                        ) : (
-                          <View style={styles.silksPlaceholder}>
-                            <Text style={styles.silksPlaceholderText}>🏇</Text>
-                          </View>
-                        )}
-                      </View>
-
-                      {/* 2. Number */}
-                      <View style={styles.colNumber}>
-                        <Text style={styles.numberText}>
-                          {horseNum}
-                          {item.draw ? <Text style={styles.drawText}>({item.draw})</Text> : null}
-                        </Text>
-                      </View>
-
-                      {/* 3. Form */}
-                      <View style={styles.colForm}>
-                        <Text style={styles.formText} numberOfLines={1}>
-                          {item.form || '-'}
-                        </Text>
-                      </View>
-
-                      {/* 4. Name */}
-                      <View style={styles.colName}>
-                        <Text style={styles.nameText} numberOfLines={1}>
-                          {item.name}
-                        </Text>
-                      </View>
-
-                      {/* 5. Last Run */}
-                      <View style={styles.colLastRun}>
-                        <Text style={styles.lastRunText}>
-                          {item.lastRun ? `${item.lastRun}d` : '-'}
-                        </Text>
-                      </View>
-
-                      {/* 6. Age */}
-                      <View style={styles.colAge}>
-                        <Text style={styles.ageText}>
-                          {item.age ? `${item.age}y` : '-'}
-                        </Text>
-                      </View>
-
-                      {/* 7. Weight */}
-                      <View style={styles.colWeight}>
-                        <Text style={styles.weightText}>
-                          {item.weight || '-'}
-                        </Text>
-                      </View>
-
-                      {/* 8. Jockey and Trainer together above and below each other (using 1 line) */}
-                      <View style={styles.colConnections}>
-                        <Text style={styles.jockeyText} numberOfLines={1}>
-                          {item.jockey ? `J: ${item.jockey}` : '-'}
-                        </Text>
-                        <Text style={styles.trainerText} numberOfLines={1}>
-                          {item.trainer ? `T: ${item.trainer}` : '-'}
-                        </Text>
-                      </View>
-
-                      {/* 9. Average Rating */}
-                      <View style={styles.colRating}>
-                        <View style={[styles.ratingPill, avgRating > 0 && styles.ratingPillActive]}>
-                          <Text
-                            style={[
-                              styles.ratingPillText,
-                              avgRating > 0 && styles.ratingPillTextActive,
-                            ]}
-                          >
-                            {avgRating > 0 ? Math.round(avgRating) : '-'}
-                          </Text>
-                        </View>
-                      </View>
-
-                      {/* 10. Latest Odd */}
-                      <View style={styles.colOdds}>
-                        {latestOdd ? (
-                          <View style={[styles.oddsPill, isNR && styles.oddsPillNR]}>
-                            <Text style={[styles.oddsPillText, isNR && styles.oddsPillTextNR]}>
-                              {isNR ? 'NR' : latestOdd}
-                            </Text>
-                          </View>
-                        ) : (
-                          <Text style={styles.oddsDash}>-</Text>
-                        )}
-                      </View>
-
-                      {/* 11. Past runs summary / details toggle */}
-                      <View style={styles.colPast}>
-                        {pastRuns.length > 0 ? (
-                          <View style={[styles.pastBtn, isExpanded && styles.pastBtnActive]}>
-                            <Text
-                              style={[
-                                styles.pastBtnText,
-                                isExpanded && styles.pastBtnTextActive,
-                              ]}
-                            >
-                              {isExpanded ? '▲ hide' : `${pastRuns.length} ▼`}
-                            </Text>
-                          </View>
-                        ) : (
-                          <Text style={styles.pastNoneText}>none</Text>
-                        )}
-                      </View>
-                    </TouchableOpacity>
-
-                    {/* Collapsible Past Runs History Table */}
-                    {isExpanded && pastRuns.length > 0 && (
-                      <View style={styles.pastSection}>
-                        <View style={styles.pastHeaderRow}>
-                          <Text style={styles.pastHeader}>
-                            Past Performance History ({item.name})
-                          </Text>
-                          <Text style={styles.pastHeaderNote}>run.name = rating</Text>
-                        </View>
-                        {pastRuns.slice(0, 6).map((run, rIdx) => {
-                          const isWin = String(run.position || '').trim().split('/')[0] === '1';
-                          return (
-                            <View key={`${run.date}-${run.time || rIdx}`} style={styles.pastRow}>
-                              <Text style={styles.pastDate}>{run.date}</Text>
-                              <Text style={styles.pastCourse}>{run.course || '-'}</Text>
-                              <Text style={styles.pastDist}>{run.distance || ''}</Text>
-                              <Text style={styles.pastRtg}>
-                                {run.name ? `Rtg: ${run.name}` : '-'}
-                              </Text>
-                              <Text style={[styles.pastPos, isWin && styles.pastPosWin]}>
-                                {run.position || '-'}
-                              </Text>
-                            </View>
-                          );
-                        })}
-                        {pastRuns.length > 6 && (
-                          <Text style={styles.morePastText}>
-                            + {pastRuns.length - 6} earlier runs
-                          </Text>
-                        )}
-                      </View>
-                    )}
-                  </View>
-                );
-              })
-            )}
+        {isCompact ? (
+          // Compact (< 650px): Full-width vertical card list without horizontal scroll
+          <View style={styles.compactWrapper}>
+            {renderHorseRows()}
           </View>
-        </ScrollView>
+        ) : (
+          // Wide (>= 650px): Full table with column headers
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={true}
+            contentContainerStyle={styles.horizontalScrollContent}
+          >
+            <View style={styles.tableWrapper}>
+              <View style={styles.tableHeaderRow}>
+                <Text style={[styles.thText, styles.colSilks]}>Silks</Text>
+                <Text style={[styles.thText, styles.colNumber]}>#</Text>
+                <Text style={[styles.thText, styles.colForm]}>Form</Text>
+                <Text style={[styles.thText, styles.colName]}>Horse</Text>
+                <Text style={[styles.thText, styles.colLastRun]}>LR</Text>
+                <Text style={[styles.thText, styles.colAge]}>Age</Text>
+                <Text style={[styles.thText, styles.colWeight]}>Wgt</Text>
+                <Text style={[styles.thText, styles.colConnections]}>Jockey / Trainer</Text>
+                <Text style={[styles.thText, styles.colRating]}>Rtg</Text>
+                <Text style={[styles.thText, styles.colOdds]}>Odds</Text>
+                <Text style={[styles.thText, styles.colPast]}>Past</Text>
+              </View>
+              {renderHorseRows()}
+            </View>
+          </ScrollView>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const createStyles = (theme) =>
+const createStyles = (theme, isCompact) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -635,6 +804,11 @@ const createStyles = (theme) =>
       backgroundColor: theme.cardBg,
       paddingBottom: 20,
     },
+    compactWrapper: {
+      backgroundColor: theme.bg,
+      paddingVertical: 4,
+      paddingBottom: 20,
+    },
     tableHeaderRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -654,6 +828,7 @@ const createStyles = (theme) =>
     rowContainer: {
       borderBottomWidth: 1,
       borderBottomColor: theme.rowBorder,
+      backgroundColor: theme.cardBg,
     },
     singleLineRow: {
       flexDirection: 'row',
@@ -662,6 +837,77 @@ const createStyles = (theme) =>
       paddingHorizontal: 6,
       minHeight: 46,
       backgroundColor: theme.cardBg,
+    },
+    compactRow: {
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      backgroundColor: theme.cardBg,
+      marginVertical: 2,
+      marginHorizontal: 8,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: theme.rowBorder,
+    },
+    compactLine1: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    compactSilksCol: {
+      width: 28,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 4,
+    },
+    compactNumberText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.textSecondary,
+      marginRight: 6,
+    },
+    compactFormBadge: {
+      backgroundColor: theme.isDark ? '#172554' : '#e8f0fe',
+      paddingHorizontal: 4,
+      paddingVertical: 1,
+      borderRadius: 3,
+      marginRight: 6,
+    },
+    compactNameText: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.textPrimary,
+      flex: 1,
+      marginRight: 6,
+    },
+    compactMetaPill: {
+      fontSize: 10.5,
+      fontWeight: '600',
+      color: theme.textSecondary,
+      backgroundColor: theme.pillBg,
+      paddingHorizontal: 4,
+      paddingVertical: 1,
+      borderRadius: 3,
+      marginRight: 4,
+    },
+    compactWeightText: {
+      fontSize: 10.5,
+      fontWeight: '600',
+      color: theme.textSecondary,
+    },
+    compactLine2: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderTopWidth: 0.5,
+      borderTopColor: theme.pastBorder,
+    },
+    compactConnectionsCol: {
+      flex: 1,
+      marginRight: 8,
+    },
+    compactRightActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
     },
     rowAlt: {
       backgroundColor: theme.rowAltBg,
@@ -779,7 +1025,7 @@ const createStyles = (theme) =>
     },
     trainerText: {
       fontSize: 9.5,
-      color: theme.textSecondary,
+      color: theme.textPrimary,
       marginTop: 1,
     },
     ratingPill: {
