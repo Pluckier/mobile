@@ -647,19 +647,6 @@ export default function App() {
         ) : (
           // Wide view (>= 650px): Full width table spanning 100% of the screen
           <View style={styles.wideWrapper}>
-            <View style={styles.tableHeaderRow}>
-              <Text style={[styles.thText, styles.colSilks]}>Silks</Text>
-              <Text style={[styles.thText, styles.colNumber]}>#</Text>
-              <Text style={[styles.thText, styles.colForm]}>Form</Text>
-              <Text style={[styles.thText, styles.colName]}>Horse</Text>
-              <Text style={[styles.thText, styles.colLastRun]}>LR</Text>
-              <Text style={[styles.thText, styles.colAge]}>Age</Text>
-              <Text style={[styles.thText, styles.colWeight]}>Wgt</Text>
-              <Text style={[styles.thText, styles.colConnections]}>Jockey / Trainer</Text>
-              <Text style={[styles.thText, styles.colRating]}>Rtg</Text>
-              <Text style={[styles.thText, styles.colOdds]}>Odds</Text>
-              <Text style={[styles.thText, styles.colPast]}>Past</Text>
-            </View>
             {renderHorseRows()}
           </View>
         )}
@@ -862,9 +849,8 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
       flexDirection: 'row',
       alignItems: 'center',
       width: '100%',
-      paddingVertical: s(6),
+      paddingVertical: s(3),
       paddingHorizontal: s(8),
-      minHeight: s(44),
       backgroundColor: theme.cardBg,
     },
     compactRow: {
