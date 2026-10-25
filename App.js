@@ -25,9 +25,9 @@ export default function App() {
   const systemColorScheme = useColorScheme();
 
   const [isDark, setIsDark] = useState(systemColorScheme === 'dark');
-  const [zoomIndex, setZoomIndex] = useState(0);
+  const [zoomIndex, setZoomIndex] = useState(1);
   const [selectedRaceIndex, setSelectedRaceIndex] = useState(0);
-  const [expandedHorse, setExpandedHorse] = useState(null);
+  const [expandedHorses, setExpandedHorses] = useState(() => new Set());
 
   const { races, loading, refreshing, error, selectedDate, setSelectedDate, fetchRaces } =
     useRaceData(new Date());
@@ -47,14 +47,14 @@ export default function App() {
   const handlePrevRace = () => {
     if (selectedRaceIndex > 0) {
       setSelectedRaceIndex((prev) => prev - 1);
-      setExpandedHorse(null);
+      setExpandedHorses(new Set());
     }
   };
 
   const handleNextRace = () => {
     if (selectedRaceIndex < races.length - 1) {
       setSelectedRaceIndex((prev) => prev + 1);
-      setExpandedHorse(null);
+      setExpandedHorses(new Set());
     }
   };
 
@@ -62,12 +62,20 @@ export default function App() {
     if (nextDate instanceof Date && !isNaN(nextDate.getTime())) {
       setSelectedDate(nextDate);
       setSelectedRaceIndex(0);
-      setExpandedHorse(null);
+      setExpandedHorses(new Set());
     }
   };
 
   const toggleExpand = (horseKey) => {
-    setExpandedHorse((prev) => (prev === horseKey ? null : horseKey));
+    setExpandedHorses((prev) => {
+      const next = new Set(prev);
+      if (next.has(horseKey)) {
+        next.delete(horseKey);
+      } else {
+        next.add(horseKey);
+      }
+      return next;
+    });
   };
 
   const handleRefresh = () => {
@@ -146,7 +154,7 @@ export default function App() {
                   styles={styles}
                   theme={theme}
                   isCompact
-                  isExpanded={expandedHorse === item.name}
+                  isExpanded={expandedHorses.has(item.name)}
                   onToggleExpand={toggleExpand}
                 />
               ))}
@@ -161,7 +169,7 @@ export default function App() {
                   styles={styles}
                   theme={theme}
                   isCompact={false}
-                  isExpanded={expandedHorse === item.name}
+                  isExpanded={expandedHorses.has(item.name)}
                   onToggleExpand={toggleExpand}
                 />
               ))}
