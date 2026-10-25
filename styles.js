@@ -108,7 +108,7 @@ export const createStyles = (theme, isCompact, scale = 1.0) => {
     nameTextNR: { textDecorationLine: 'line-through', color: theme.textTertiary },
     colSilks: { width: s(34), alignItems: 'center', justifyContent: 'center' },
     colNumber: { width: s(28), alignItems: 'center', justifyContent: 'center' },
-    colForm: { width: s(62), paddingHorizontal: 2, justifyContent: 'center' },
+    colForm: { width: s(62), paddingHorizontal: 2, justifyContent: 'center', alignItems: 'flex-end', paddingRight: 15 },
     colName: { flex: 2, minWidth: s(110), paddingHorizontal: 5, justifyContent: 'center' },
     colLastRun: { width: s(38), alignItems: 'center', justifyContent: 'center' },
     colAge: { width: s(32), alignItems: 'center', justifyContent: 'center' },
