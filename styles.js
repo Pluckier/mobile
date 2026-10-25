@@ -372,7 +372,7 @@ export const createStyles = (theme, isCompact, scale = 1.0) => {
       justifyContent: 'center',
     },
     colNumber: {
-      width: s(28),
+      width: s(34),
       alignItems: 'center',
       justifyContent: 'center',
     },
