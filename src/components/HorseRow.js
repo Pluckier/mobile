@@ -204,14 +204,14 @@ export default function HorseRow({
                 badgeStyle = styles.oddsPill;
                 textStyle = styles.oddsPillText;
               } else if (prevOdd < currentOddNum) {
-                badgeStyle = [styles.oddsPill, { backgroundColor: theme.oddsBadgeBgBlue }];
+                badgeStyle = [styles.oddsPill];
                 textStyle = [styles.oddsPillText, { color: theme.oddsTextBlue }];
               } else {
-                badgeStyle = [styles.oddsPill, { backgroundColor: theme.isDark ? '#27272a' : '#5f6368' }];
+                badgeStyle = [styles.oddsPill];
                 textStyle = [styles.oddsPillText, { color: '#ffffff' }];
               }
             } else {
-              badgeStyle = [styles.oddsPill, { backgroundColor: theme.isDark ? '#27272a' : '#5f6368' }];
+              badgeStyle = [styles.oddsPill];
               textStyle = [styles.oddsPillText, { color: '#ffffff' }];
             }
 

@@ -24,11 +24,11 @@ export const getTheme = (isDark) => ({
   textSecondary: isDark ? '#94a3b8' : '#5f6368',
   textTertiary: isDark ? '#64748b' : '#70757a',
   rowBorder: isDark ? '#262d3a' : '#eeeeee',
-  ratingPillBg: isDark ? '#2d2206' : '#fef7e0',
-  ratingPillBorder: isDark ? '#b45309' : '#f9ab00',
-  ratingPillText: isDark ? '#fbbf24' : '#b06000',
-  ratingPillInactiveBg: isDark ? '#262626' : '#f1f3f4',
-  ratingPillInactiveText: isDark ? '#525252' : '#9aa0a6',
+  ratingPillBg: isDark ? '#2e1065' : '#f5f3ff',          // Deep violet-black vs soft lavender mist
+  ratingPillBorder: isDark ? '#6d28d9' : '#ddd6fe',      // Rich royal purple vs clean accent border
+  ratingPillText: isDark ? '#c084fc' : '#6d28d9',        // Bright neon violet vs highly readable deep purple
+  ratingPillInactiveBg: isDark ? '#1e1b4b' : '#f3f4f6',  // Midnight blue-purple vs neutral light gray
+  ratingPillInactiveText: isDark ? '#4338ca' : '#9ca3af',// Subdued deep indigo vs muted slate text
   oddsBadgeBg: isDark ? '#3b1219' : '#fce8e6',
   oddsBadgeBgBlue: isDark ? '#11223f' : '#e8f0fe',
   oddsText: isDark ? '#f87171' : '#c5221f',
@@ -46,7 +46,7 @@ export const getTheme = (isDark) => ({
   pastDateText: isDark ? '#e2e8f0' : '#3c4043',
   pastCourseText: isDark ? '#cbd5e1' : '#3c4043',
   pastDistText: isDark ? '#94a3b8' : '#70757a',
-  pastRtgText: isDark ? '#f59e0b' : '#e37400',
+  pastRtgText: isDark ? '#c084fc' : '#6d28d9',
   pastPosText: isDark ? '#94a3b8' : '#5f6368',
   pastPosWinText: isDark ? '#4ade80' : '#137333',
   silksPlaceholderBg: isDark ? '#2a3342' : '#f1f3f4',
@@ -128,12 +128,12 @@ export const createStyles = (theme, isCompact, scale = 1.0) => {
     weightText: { fontSize: s(10.5), color: theme.textSecondary, fontWeight: '600' },
     jockeyText: { fontSize: s(10), fontWeight: '600', color: theme.textPrimary },
     trainerText: { fontSize: s(10), fontWeight: '600', color: theme.textPrimary, marginTop: 1 },
-    ratingPill: { backgroundColor: theme.ratingPillInactiveBg, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4, minWidth: s(32), alignItems: 'center' },
-    ratingPillActive: { backgroundColor: theme.ratingPillBg, borderWidth: 1, borderColor: theme.ratingPillBorder },
+    ratingPill: { paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4, minWidth: s(32), alignItems: 'center' },
+    ratingPillActive: {},
     ratingPillText: { fontSize: s(10.5), fontWeight: '600', color: theme.ratingPillInactiveText },
     ratingPillTextActive: { fontSize: s(11), fontWeight: '800', color: theme.ratingPillText },
-    oddsPill: { backgroundColor: theme.oddsBadgeBg, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, minWidth: s(36), alignItems: 'center' },
-    oddsPillNR: { backgroundColor: theme.oddsNrBg },
+    oddsPill: { paddingHorizontal: 6, paddingVertical: 2, minWidth: s(36), alignItems: 'center' },
+    oddsPillNR: {},
     oddsPillText: { fontSize: s(11), fontWeight: '700', color: theme.oddsText },
     oddsPillTextNR: { color: theme.oddsNrText },
     oddsDash: { fontSize: s(12), color: theme.textTertiary },
