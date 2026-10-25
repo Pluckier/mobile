@@ -70,7 +70,7 @@ export const createStyles = (theme, isCompact, scale = 1.0) => {
     retryBtn: { backgroundColor: theme.navBtnBg, paddingHorizontal: s(20), paddingVertical: s(10), borderRadius: 6 },
     retryBtnText: { color: '#fff', fontWeight: '600', fontSize: s(15) },
     header: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: theme.headerBg },
-    headerTop: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
+    headerTop: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12 },
     headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     zoomToggleBtn: { backgroundColor: theme.toggleBtnBg, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
     zoomToggleText: { fontSize: 11.5, fontWeight: '700', color: theme.toggleBtnText },
