@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -27,6 +27,18 @@ const calculateWins = (past) => {
     const posNum = parseInt(posStr.split('/')[0], 10);
     return posNum === 1;
   }).length;
+};
+
+// Calculate average rating from the last 3 runs (using property run.name)
+const getAverageRating = (horse) => {
+  const runs = (horse?.past || []).slice(0, 3);
+  if (runs.length === 0) return 0;
+  const validRatings = runs
+    .map((r) => parseFloat(r?.name))
+    .filter((val) => !isNaN(val) && val > 0);
+  if (validRatings.length === 0) return 0;
+  const sum = validRatings.reduce((acc, curr) => acc + curr, 0);
+  return sum / validRatings.length;
 };
 
 export default function App() {
@@ -78,7 +90,22 @@ export default function App() {
   };
 
   const selectedRace = races[selectedRaceIndex] || null;
-  const horses = selectedRace?.horses || [];
+
+  // Order horses descending by average rating of their last 3 runs (run.name)
+  const horses = useMemo(() => {
+    const rawHorses = selectedRace?.horses || [];
+    return [...rawHorses].sort((a, b) => {
+      const ratingA = getAverageRating(a);
+      const ratingB = getAverageRating(b);
+      if (ratingB !== ratingA) {
+        return ratingB - ratingA; // Highest 3-run average rating first
+      }
+      // Fallback: order by card number
+      const numA = parseInt(a.number, 10) || 999;
+      const numB = parseInt(b.number, 10) || 999;
+      return numA - numB;
+    });
+  }, [selectedRace]);
 
   const toggleExpand = (horseKey) => {
     setExpandedHorse((prev) => (prev === horseKey ? null : horseKey));
@@ -185,7 +212,7 @@ export default function App() {
         </View>
       )}
 
-      {/* Horses FlatList */}
+      {/* Horses FlatList (Sorted by 3-run avg rating) */}
       <FlatList
         data={horses}
         keyExtractor={(item, index) => `${item.name}-${item.number || index}`}
@@ -203,6 +230,7 @@ export default function App() {
           const wins = calculateWins(item.past);
           const pastRuns = item.past || [];
           const isExpanded = expandedHorse === item.name;
+          const avgRating = getAverageRating(item);
           const latestOdd =
             Array.isArray(item.odds) && item.odds.length > 0
               ? item.odds[item.odds.length - 1]
@@ -242,8 +270,15 @@ export default function App() {
                     {item.age ? <Text style={styles.ageTag}>{item.age}yo</Text> : null}
                   </View>
 
-                  {/* Form, Weight & Last Run Chips */}
+                  {/* Rating, Form, Weight & Last Run Chips */}
                   <View style={styles.metaRow}>
+                    {avgRating > 0 ? (
+                      <View style={styles.ratingBadge}>
+                        <Text style={styles.ratingLabel}>Avg Rtg: </Text>
+                        <Text style={styles.ratingValue}>{Math.round(avgRating)}</Text>
+                      </View>
+                    ) : null}
+
                     {item.form ? (
                       <View style={styles.formBadge}>
                         <Text style={styles.formLabel}>Form: </Text>
@@ -297,7 +332,10 @@ export default function App() {
               {/* Collapsible Past Runs History */}
               {isExpanded && pastRuns.length > 0 && (
                 <View style={styles.pastSection}>
-                  <Text style={styles.pastHeader}>Past Performance History</Text>
+                  <View style={styles.pastHeaderRow}>
+                    <Text style={styles.pastHeader}>Past Performance History</Text>
+                    <Text style={styles.pastHeaderNote}>run.name = rating</Text>
+                  </View>
                   {pastRuns.slice(0, 6).map((run, rIdx) => {
                     const isWin = String(run.position || '').trim().split('/')[0] === '1';
                     return (
@@ -305,6 +343,9 @@ export default function App() {
                         <Text style={styles.pastDate}>{run.date}</Text>
                         <Text style={styles.pastCourse}>{run.course || '-'}</Text>
                         <Text style={styles.pastDist}>{run.distance || ''}</Text>
+                        <Text style={styles.pastRtg}>
+                          {run.name ? `Rtg: ${run.name}` : '-'}
+                        </Text>
                         <Text style={[styles.pastPos, isWin && styles.pastPosWin]}>
                           {run.position || '-'}
                         </Text>
@@ -531,6 +572,25 @@ const styles = StyleSheet.create({
     marginTop: 4,
     gap: 6,
   },
+  ratingBadge: {
+    flexDirection: 'row',
+    backgroundColor: '#fef7e0',
+    borderWidth: 1,
+    borderColor: '#f9ab00',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  ratingLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#b06000',
+  },
+  ratingValue: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#e37400',
+  },
   formBadge: {
     flexDirection: 'row',
     backgroundColor: '#e8f0fe',
@@ -614,16 +674,26 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: '#fafafa',
   },
+  pastHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
   pastHeader: {
     fontSize: 11,
     fontWeight: '700',
     color: '#5f6368',
-    marginBottom: 6,
     textTransform: 'uppercase',
+  },
+  pastHeaderNote: {
+    fontSize: 10,
+    color: '#80868b',
+    fontStyle: 'italic',
   },
   pastRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 4,
     borderBottomWidth: 0.5,
     borderBottomColor: '#eeeeee',
@@ -631,22 +701,29 @@ const styles = StyleSheet.create({
   pastDate: {
     fontSize: 12,
     color: '#3c4043',
-    width: 75,
+    width: 72,
   },
   pastCourse: {
     fontSize: 12,
     color: '#3c4043',
-    width: 60,
+    width: 48,
   },
   pastDist: {
     fontSize: 12,
     color: '#70757a',
-    width: 45,
+    width: 38,
+  },
+  pastRtg: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#e37400',
+    width: 65,
   },
   pastPos: {
     fontSize: 12,
     fontWeight: '600',
     color: '#5f6368',
+    flex: 1,
     textAlign: 'right',
   },
   pastPosWin: {
