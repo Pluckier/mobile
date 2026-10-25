@@ -382,7 +382,7 @@ export default function App() {
                           isExpanded && styles.pastBtnTextActive,
                         ]}
                       >
-                        {isExpanded ? '▲ hide' : `${pastRuns.length} ▼`}
+                        {`${pastRuns.length}`}
                       </Text>
                     </View>
                   ) : (
@@ -397,31 +397,26 @@ export default function App() {
               <View style={styles.pastSection}>
                 <View style={styles.pastHeaderRow}>
                   <Text style={styles.pastHeader}>
-                    Past Performance History ({item.name})
+                    Past Performance History
                   </Text>
-                  <Text style={styles.pastHeaderNote}>run.name = rating</Text>
                 </View>
-                {pastRuns.slice(0, 6).map((run, rIdx) => {
+                {pastRuns.slice(0, 12).map((run, rIdx) => {
                   const isWin = String(run.position || '').trim().split('/')[0] === '1';
                   return (
                     <View key={`${run.date}-${run.time || rIdx}`} style={styles.pastRow}>
                       <Text style={styles.pastDate}>{run.date}</Text>
                       <Text style={styles.pastCourse}>{run.course || '-'}</Text>
                       <Text style={styles.pastDist}>{run.distance || ''}</Text>
-                      <Text style={styles.pastRtg}>
-                        {run.name ? `Rtg: ${run.name}` : '-'}
-                      </Text>
+                      <Text style={styles.pastDist}>{run.distBeaten || ''} l</Text>
                       <Text style={[styles.pastPos, isWin && styles.pastPosWin]}>
                         {run.position || '-'}
                       </Text>
+                      <Text style={styles.pastRtg}>
+                        {run.name ? `Rtg: ${run.name}` : '-'}
+                      </Text>``
                     </View>
                   );
                 })}
-                {pastRuns.length > 6 && (
-                  <Text style={styles.morePastText}>
-                    + {pastRuns.length - 6} earlier runs
-                  </Text>
-                )}
               </View>
             )}
           </View>
@@ -579,7 +574,7 @@ export default function App() {
                       isExpanded && styles.pastBtnTextActive,
                     ]}
                   >
-                    {isExpanded ? '▲' : `${pastRuns.length} ▼`}
+                    {`${pastRuns.length}`}
                   </Text>
                 </View>
               ) : (
@@ -595,29 +590,24 @@ export default function App() {
                 <Text style={styles.pastHeader}>
                   Past Performance History ({item.name})
                 </Text>
-                <Text style={styles.pastHeaderNote}>run.name = rating</Text>
               </View>
-              {pastRuns.slice(0, 6).map((run, rIdx) => {
+              {pastRuns.slice(0, 12).map((run, rIdx) => {
                 const isWin = String(run.position || '').trim().split('/')[0] === '1';
                 return (
                   <View key={`${run.date}-${run.time || rIdx}`} style={styles.pastRow}>
                     <Text style={styles.pastDate}>{run.date}</Text>
                     <Text style={styles.pastCourse}>{run.course || '-'}</Text>
                     <Text style={styles.pastDist}>{run.distance || ''}</Text>
-                    <Text style={styles.pastRtg}>
-                      {run.name ? `Rtg: ${run.name}` : '-'}
-                    </Text>
+                    <Text style={styles.pastDist}>{run.distBeaten || ''} l</Text>
                     <Text style={[styles.pastPos, isWin && styles.pastPosWin]}>
                       {run.position || '-'}
+                    </Text>
+                    <Text style={styles.pastRtg}>
+                      {run.name ? `Rtg: ${run.name}` : '-'}
                     </Text>
                   </View>
                 );
               })}
-              {pastRuns.length > 6 && (
-                <Text style={styles.morePastText}>
-                  + {pastRuns.length - 6} earlier runs
-                </Text>
-              )}
             </View>
           )}
         </View>
@@ -830,6 +820,7 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
       borderBottomColor: theme.navBorder,
     },
     navBtn: {
+      flex: 1,
       backgroundColor: theme.navBtnBg,
       paddingHorizontal: 16,
       alignSelf: 'stretch',
@@ -850,9 +841,9 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
     navCenter: {
       alignItems: 'center',
       justifyContent: 'center',
-      flex: 1,
-      marginHorizontal: 8,
+      paddingHorizontal: 12,
       paddingVertical: 8,
+      maxWidth: '65%',
     },
     navRaceCounter: {
       fontSize: 11,
@@ -1267,7 +1258,6 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
       fontWeight: '600',
       color: theme.pastPosText,
       flex: 1,
-      textAlign: 'right',
     },
     pastPosWin: {
       color: theme.pastPosWinText,
