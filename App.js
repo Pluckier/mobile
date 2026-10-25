@@ -12,6 +12,7 @@ import {
   Image,
   useColorScheme,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 
 const getFormattedToday = () => {
@@ -848,6 +849,11 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
     },
     tableScroll: {
       flex: 1,
+      ...(Platform.OS === 'web'
+        ? {
+          scrollbarGutter: 'stable',
+        }
+        : {}),
     },
     wideWrapper: {
       width: '100%',
