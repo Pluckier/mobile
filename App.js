@@ -3,7 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
-  FlatList,
+  ScrollView,
   ActivityIndicator,
   SafeAreaView,
   StatusBar,
@@ -19,15 +19,6 @@ const getFormattedToday = () => {
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const year = d.getFullYear();
   return `${day}-${month}-${year}`;
-};
-
-const calculateWins = (past) => {
-  if (!Array.isArray(past)) return 0;
-  return past.filter((run) => {
-    const posStr = String(run?.position || '').trim();
-    const posNum = parseInt(posStr.split('/')[0], 10);
-    return posNum === 1;
-  }).length;
 };
 
 // Calculate average rating from the last 3 runs (using property run.name)
@@ -46,12 +37,16 @@ const getTheme = (isDark) => ({
   isDark,
   bg: isDark ? '#121212' : '#f1f3f4',
   cardBg: isDark ? '#1e1e1e' : '#ffffff',
+  rowAltBg: isDark ? '#181b22' : '#f8f9fa',
   headerBg: isDark ? '#1a2332' : '#1a73e8',
   headerText: '#ffffff',
   headerDateBg: 'rgba(255, 255, 255, 0.2)',
   headerDateText: '#ffffff',
   headerSubtitle: isDark ? '#cbd5e1' : '#e8eaed',
   headerDetail: isDark ? '#93c5fd' : '#d2e3fc',
+  tableHeaderBg: isDark ? '#161e2e' : '#e9ecef',
+  tableHeaderBorder: isDark ? '#2e3846' : '#dadce0',
+  tableHeaderText: isDark ? '#93c5fd' : '#495057',
   navBg: isDark ? '#1e1e1e' : '#ffffff',
   navBorder: isDark ? '#2e3846' : '#dadce0',
   navBtnBg: isDark ? '#2563eb' : '#1a73e8',
@@ -63,29 +58,24 @@ const getTheme = (isDark) => ({
   textPrimary: isDark ? '#f8fafc' : '#202124',
   textSecondary: isDark ? '#94a3b8' : '#5f6368',
   textTertiary: isDark ? '#64748b' : '#70757a',
-  tagBg: isDark ? '#2a3342' : '#f1f3f4',
-  tagText: isDark ? '#cbd5e1' : '#5f6368',
-  attrBg: isDark ? '#262626' : '#f8f9fa',
-  attrText: isDark ? '#94a3b8' : '#5f6368',
-  formBadgeBg: isDark ? '#172554' : '#e8f0fe',
-  formLabel: isDark ? '#93c5fd' : '#1967d2',
-  formValue: isDark ? '#bfdbfe' : '#174ea6',
-  ratingBadgeBg: isDark ? '#2d2206' : '#fef7e0',
-  ratingBadgeBorder: isDark ? '#b45309' : '#f9ab00',
-  ratingLabel: isDark ? '#fbbf24' : '#b06000',
-  ratingValue: isDark ? '#f59e0b' : '#e37400',
+  rowBorder: isDark ? '#262d3a' : '#eeeeee',
+  ratingPillBg: isDark ? '#2d2206' : '#fef7e0',
+  ratingPillBorder: isDark ? '#b45309' : '#f9ab00',
+  ratingPillText: isDark ? '#fbbf24' : '#b06000',
+  ratingPillInactiveBg: isDark ? '#262626' : '#f1f3f4',
+  ratingPillInactiveText: isDark ? '#525252' : '#9aa0a6',
   oddsBadgeBg: isDark ? '#3b1219' : '#fce8e6',
   oddsText: isDark ? '#f87171' : '#c5221f',
   oddsNrBg: isDark ? '#262626' : '#f1f3f4',
   oddsNrText: isDark ? '#94a3b8' : '#5f6368',
-  winsBadgeBg: isDark ? '#052e16' : '#e6f4ea',
-  winsText: isDark ? '#4ade80' : '#137333',
-  winsZeroBg: isDark ? '#262626' : '#f1f3f4',
-  winsZeroText: isDark ? '#94a3b8' : '#5f6368',
-  expandHint: isDark ? '#60a5fa' : '#1a73e8',
-  pastBg: isDark ? '#18181b' : '#fafafa',
+  pastBtnBg: isDark ? '#172554' : '#e8f0fe',
+  pastBtnBorder: isDark ? '#1e40af' : '#c2e7ff',
+  pastBtnText: isDark ? '#93c5fd' : '#1967d2',
+  pastBtnActiveBg: isDark ? '#2563eb' : '#1a73e8',
+  pastBtnActiveText: '#ffffff',
+  pastBg: isDark ? '#141416' : '#fafafa',
   pastBorder: isDark ? '#27272a' : '#eeeeee',
-  pastSectionBorder: isDark ? '#2e3846' : '#f1f3f4',
+  pastSectionBorder: isDark ? '#2e3846' : '#dadce0',
   pastDateText: isDark ? '#e2e8f0' : '#3c4043',
   pastCourseText: isDark ? '#cbd5e1' : '#3c4043',
   pastDistText: isDark ? '#94a3b8' : '#70757a',
@@ -284,155 +274,212 @@ export default function App() {
         </View>
       )}
 
-      {/* Horses FlatList (Sorted by 3-run avg rating) */}
-      <FlatList
-        data={horses}
-        keyExtractor={(item, index) => `${item.name}-${item.number || index}`}
+      {/* Single-Row Horse Racecard Table */}
+      <ScrollView
+        style={styles.tableScroll}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.navBtnBg]} />
         }
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No horses listed for this race card.</Text>
-          </View>
-        }
-        renderItem={({ item, index }) => {
-          const horseNum = item.number || index + 1;
-          const wins = calculateWins(item.past);
-          const pastRuns = item.past || [];
-          const isExpanded = expandedHorse === item.name;
-          const avgRating = getAverageRating(item);
-          const latestOdd =
-            Array.isArray(item.odds) && item.odds.length > 0
-              ? item.odds[item.odds.length - 1]
-              : null;
-          const isNR = latestOdd === 'NR' || latestOdd === 'null';
-
-          return (
-            <View style={styles.card}>
-              <TouchableOpacity
-                style={styles.row}
-                onPress={() => toggleExpand(item.name)}
-                activeOpacity={0.7}
-              >
-                {/* Number & Jockey Silks */}
-                <View style={styles.leftCol}>
-                  <Text style={styles.number}>
-                    {horseNum}
-                    {item.draw ? <Text style={styles.draw}> ({item.draw})</Text> : null}
-                  </Text>
-                  {item.silks ? (
-                    <Image
-                      source={{ uri: item.silks }}
-                      style={styles.silksImage}
-                      resizeMode="contain"
-                    />
-                  ) : (
-                    <View style={styles.silksPlaceholder}>
-                      <Text style={styles.silksPlaceholderText}>🏇</Text>
-                    </View>
-                  )}
-                </View>
-
-                {/* Horse Core Info & Meta */}
-                <View style={styles.infoCol}>
-                  <View style={styles.nameRow}>
-                    <Text style={styles.name}>{item.name}</Text>
-                    {item.age ? <Text style={styles.ageTag}>{item.age}yo</Text> : null}
-                  </View>
-
-                  {/* Rating, Form, Weight & Last Run Chips */}
-                  <View style={styles.metaRow}>
-                    {avgRating > 0 ? (
-                      <View style={styles.ratingBadge}>
-                        <Text style={styles.ratingLabel}></Text>
-                        <Text style={styles.ratingValue}>{Math.round(avgRating)}</Text>
-                      </View>
-                    ) : null}
-
-                    {item.form ? (
-                      <View style={styles.formBadge}>
-                        <Text style={styles.formLabel}> </Text>
-                        <Text style={styles.formValue}>{item.form}</Text>
-                      </View>
-                    ) : null}
-
-                    {item.weight ? (
-                      <Text style={styles.attributeText}>{item.weight}</Text>
-                    ) : null}
-
-                    {item.lastRun ? (
-                      <Text style={styles.attributeText}>{item.lastRun} days</Text>
-                    ) : null}
-                  </View>
-
-                  {/* Connections: Jockey & Trainer */}
-                  {(item.jockey || item.trainer) && (
-                    <Text style={styles.connectionsText} numberOfLines={1}>
-                      {item.jockey ? `J: ${item.jockey}` : ''}
-                      {item.jockey && item.trainer ? ' • ' : ''}
-                      {item.trainer ? `T: ${item.trainer}` : ''}
-                    </Text>
-                  )}
-                </View>
-
-                {/* Right: Odds, Wins & Expansion Indicator */}
-                <View style={styles.rightCol}>
-                  {latestOdd && (
-                    <View style={[styles.oddsBadge, isNR && styles.oddsBadgeNR]}>
-                      <Text style={[styles.oddsText, isNR && styles.oddsTextNR]}>
-                        {isNR ? 'NR' : latestOdd}
-                      </Text>
-                    </View>
-                  )}
-
-                  <View style={[styles.winsBadge, wins === 0 && styles.winsBadgeZero]}>
-                    <Text style={[styles.wins, wins === 0 && styles.winsZero]}>
-                      {wins} {wins === 1 ? 'Win' : 'Wins'}
-                    </Text>
-                  </View>
-
-                  {pastRuns.length > 0 && (
-                    <Text style={styles.expandHint}>
-                      {isExpanded ? '▲ hide' : `▼ ${pastRuns.length} runs`}
-                    </Text>
-                  )}
-                </View>
-              </TouchableOpacity>
-
-              {/* Collapsible Past Runs History */}
-              {isExpanded && pastRuns.length > 0 && (
-                <View style={styles.pastSection}>
-                  <View style={styles.pastHeaderRow}>
-                    <Text style={styles.pastHeader}>Past Performance History</Text>
-                    <Text style={styles.pastHeaderNote}>run.name = rating</Text>
-                  </View>
-                  {pastRuns.slice(0, 6).map((run, rIdx) => {
-                    const isWin = String(run.position || '').trim().split('/')[0] === '1';
-                    return (
-                      <View key={`${run.date}-${run.time || rIdx}`} style={styles.pastRow}>
-                        <Text style={styles.pastDate}>{run.date}</Text>
-                        <Text style={styles.pastCourse}>{run.course || '-'}</Text>
-                        <Text style={styles.pastDist}>{run.distance || ''}</Text>
-                        <Text style={styles.pastRtg}>
-                          {run.name ? `Rtg: ${run.name}` : '-'}
-                        </Text>
-                        <Text style={[styles.pastPos, isWin && styles.pastPosWin]}>
-                          {run.position || '-'}
-                        </Text>
-                      </View>
-                    );
-                  })}
-                  {pastRuns.length > 6 && (
-                    <Text style={styles.morePastText}>+ {pastRuns.length - 6} earlier runs</Text>
-                  )}
-                </View>
-              )}
+      >
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={true}
+          contentContainerStyle={styles.horizontalScrollContent}
+        >
+          <View style={styles.tableWrapper}>
+            {/* Table Column Headers */}
+            <View style={styles.tableHeaderRow}>
+              <Text style={[styles.thText, styles.colSilks]}>Silks</Text>
+              <Text style={[styles.thText, styles.colNumber]}>#</Text>
+              <Text style={[styles.thText, styles.colForm]}>Form</Text>
+              <Text style={[styles.thText, styles.colName]}>Horse</Text>
+              <Text style={[styles.thText, styles.colLastRun]}>LR</Text>
+              <Text style={[styles.thText, styles.colAge]}>Age</Text>
+              <Text style={[styles.thText, styles.colWeight]}>Wgt</Text>
+              <Text style={[styles.thText, styles.colConnections]}>Jockey / Trainer</Text>
+              <Text style={[styles.thText, styles.colRating]}>Rtg</Text>
+              <Text style={[styles.thText, styles.colOdds]}>Odds</Text>
+              <Text style={[styles.thText, styles.colPast]}>Past</Text>
             </View>
-          );
-        }}
-      />
+
+            {/* Horse Rows */}
+            {horses.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No horses listed for this race card.</Text>
+              </View>
+            ) : (
+              horses.map((item, index) => {
+                const horseNum = item.number || index + 1;
+                const pastRuns = item.past || [];
+                const isExpanded = expandedHorse === item.name;
+                const avgRating = getAverageRating(item);
+                const latestOdd =
+                  Array.isArray(item.odds) && item.odds.length > 0
+                    ? item.odds[item.odds.length - 1]
+                    : null;
+                const isNR = latestOdd === 'NR' || latestOdd === 'null';
+                const isOddRow = index % 2 === 1;
+
+                return (
+                  <View key={`${item.name}-${item.number || index}`} style={styles.rowContainer}>
+                    <TouchableOpacity
+                      style={[styles.singleLineRow, isOddRow && styles.rowAlt]}
+                      onPress={() => toggleExpand(item.name)}
+                      activeOpacity={0.7}
+                    >
+                      {/* 1. Silks */}
+                      <View style={styles.colSilks}>
+                        {item.silks ? (
+                          <Image
+                            source={{ uri: item.silks }}
+                            style={styles.silksImage}
+                            resizeMode="contain"
+                          />
+                        ) : (
+                          <View style={styles.silksPlaceholder}>
+                            <Text style={styles.silksPlaceholderText}>🏇</Text>
+                          </View>
+                        )}
+                      </View>
+
+                      {/* 2. Number */}
+                      <View style={styles.colNumber}>
+                        <Text style={styles.numberText}>
+                          {horseNum}
+                          {item.draw ? <Text style={styles.drawText}>({item.draw})</Text> : null}
+                        </Text>
+                      </View>
+
+                      {/* 3. Form */}
+                      <View style={styles.colForm}>
+                        <Text style={styles.formText} numberOfLines={1}>
+                          {item.form || '-'}
+                        </Text>
+                      </View>
+
+                      {/* 4. Name */}
+                      <View style={styles.colName}>
+                        <Text style={styles.nameText} numberOfLines={1}>
+                          {item.name}
+                        </Text>
+                      </View>
+
+                      {/* 5. Last Run */}
+                      <View style={styles.colLastRun}>
+                        <Text style={styles.lastRunText}>
+                          {item.lastRun ? `${item.lastRun}d` : '-'}
+                        </Text>
+                      </View>
+
+                      {/* 6. Age */}
+                      <View style={styles.colAge}>
+                        <Text style={styles.ageText}>
+                          {item.age ? `${item.age}y` : '-'}
+                        </Text>
+                      </View>
+
+                      {/* 7. Weight */}
+                      <View style={styles.colWeight}>
+                        <Text style={styles.weightText}>
+                          {item.weight || '-'}
+                        </Text>
+                      </View>
+
+                      {/* 8. Jockey and Trainer together above and below each other (using 1 line) */}
+                      <View style={styles.colConnections}>
+                        <Text style={styles.jockeyText} numberOfLines={1}>
+                          {item.jockey ? `J: ${item.jockey}` : '-'}
+                        </Text>
+                        <Text style={styles.trainerText} numberOfLines={1}>
+                          {item.trainer ? `T: ${item.trainer}` : '-'}
+                        </Text>
+                      </View>
+
+                      {/* 9. Average Rating */}
+                      <View style={styles.colRating}>
+                        <View style={[styles.ratingPill, avgRating > 0 && styles.ratingPillActive]}>
+                          <Text
+                            style={[
+                              styles.ratingPillText,
+                              avgRating > 0 && styles.ratingPillTextActive,
+                            ]}
+                          >
+                            {avgRating > 0 ? Math.round(avgRating) : '-'}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* 10. Latest Odd */}
+                      <View style={styles.colOdds}>
+                        {latestOdd ? (
+                          <View style={[styles.oddsPill, isNR && styles.oddsPillNR]}>
+                            <Text style={[styles.oddsPillText, isNR && styles.oddsPillTextNR]}>
+                              {isNR ? 'NR' : latestOdd}
+                            </Text>
+                          </View>
+                        ) : (
+                          <Text style={styles.oddsDash}>-</Text>
+                        )}
+                      </View>
+
+                      {/* 11. Past runs summary / details toggle */}
+                      <View style={styles.colPast}>
+                        {pastRuns.length > 0 ? (
+                          <View style={[styles.pastBtn, isExpanded && styles.pastBtnActive]}>
+                            <Text
+                              style={[
+                                styles.pastBtnText,
+                                isExpanded && styles.pastBtnTextActive,
+                              ]}
+                            >
+                              {isExpanded ? '▲ hide' : `${pastRuns.length} ▼`}
+                            </Text>
+                          </View>
+                        ) : (
+                          <Text style={styles.pastNoneText}>none</Text>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+
+                    {/* Collapsible Past Runs History Table */}
+                    {isExpanded && pastRuns.length > 0 && (
+                      <View style={styles.pastSection}>
+                        <View style={styles.pastHeaderRow}>
+                          <Text style={styles.pastHeader}>
+                            Past Performance History ({item.name})
+                          </Text>
+                          <Text style={styles.pastHeaderNote}>run.name = rating</Text>
+                        </View>
+                        {pastRuns.slice(0, 6).map((run, rIdx) => {
+                          const isWin = String(run.position || '').trim().split('/')[0] === '1';
+                          return (
+                            <View key={`${run.date}-${run.time || rIdx}`} style={styles.pastRow}>
+                              <Text style={styles.pastDate}>{run.date}</Text>
+                              <Text style={styles.pastCourse}>{run.course || '-'}</Text>
+                              <Text style={styles.pastDist}>{run.distance || ''}</Text>
+                              <Text style={styles.pastRtg}>
+                                {run.name ? `Rtg: ${run.name}` : '-'}
+                              </Text>
+                              <Text style={[styles.pastPos, isWin && styles.pastPosWin]}>
+                                {run.position || '-'}
+                              </Text>
+                            </View>
+                          );
+                        })}
+                        {pastRuns.length > 6 && (
+                          <Text style={styles.morePastText}>
+                            + {pastRuns.length - 6} earlier runs
+                          </Text>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                );
+              })
+            )}
+          </View>
+        </ScrollView>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -578,188 +625,238 @@ const createStyles = (theme) =>
       color: theme.navSummary,
       marginTop: 2,
     },
-    listContainer: {
-      paddingVertical: 8,
-      paddingBottom: 24,
+    tableScroll: {
+      flex: 1,
     },
-    card: {
+    horizontalScrollContent: {
+      minWidth: '100%',
+    },
+    tableWrapper: {
       backgroundColor: theme.cardBg,
-      marginVertical: 4,
-      marginHorizontal: 10,
-      borderRadius: 8,
-      elevation: 1,
-      shadowColor: '#000',
-      shadowOpacity: theme.isDark ? 0.25 : 0.04,
-      shadowRadius: 3,
-      shadowOffset: { width: 0, height: 1 },
-      overflow: 'hidden',
+      paddingBottom: 20,
     },
-    row: {
+    tableHeaderRow: {
       flexDirection: 'row',
-      padding: 12,
       alignItems: 'center',
+      backgroundColor: theme.tableHeaderBg,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.tableHeaderBorder,
+      paddingVertical: 8,
+      paddingHorizontal: 6,
     },
-    leftCol: {
-      alignItems: 'center',
-      width: 44,
-      marginRight: 6,
-    },
-    number: {
-      fontSize: 14,
+    thText: {
+      fontSize: 10,
       fontWeight: '700',
-      color: theme.textSecondary,
-      marginBottom: 4,
+      color: theme.tableHeaderText,
+      textTransform: 'uppercase',
+      letterSpacing: 0.3,
     },
-    draw: {
-      fontSize: 11,
-      color: theme.textTertiary,
-      fontWeight: 'normal',
+    rowContainer: {
+      borderBottomWidth: 1,
+      borderBottomColor: theme.rowBorder,
+    },
+    singleLineRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 7,
+      paddingHorizontal: 6,
+      minHeight: 46,
+      backgroundColor: theme.cardBg,
+    },
+    rowAlt: {
+      backgroundColor: theme.rowAltBg,
+    },
+    colSilks: {
+      width: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    colNumber: {
+      width: 28,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    colForm: {
+      width: 58,
+      paddingHorizontal: 3,
+      justifyContent: 'center',
+    },
+    colName: {
+      width: 116,
+      paddingHorizontal: 4,
+      justifyContent: 'center',
+    },
+    colLastRun: {
+      width: 36,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    colAge: {
+      width: 30,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    colWeight: {
+      width: 46,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    colConnections: {
+      width: 125,
+      paddingHorizontal: 4,
+      justifyContent: 'center',
+    },
+    colRating: {
+      width: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    colOdds: {
+      width: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    colPast: {
+      width: 76,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     silksImage: {
-      width: 38,
-      height: 38,
+      width: 26,
+      height: 26,
     },
     silksPlaceholder: {
-      width: 38,
-      height: 38,
-      borderRadius: 6,
+      width: 26,
+      height: 26,
+      borderRadius: 4,
       backgroundColor: theme.silksPlaceholderBg,
       justifyContent: 'center',
       alignItems: 'center',
     },
     silksPlaceholderText: {
-      fontSize: 18,
+      fontSize: 14,
     },
-    infoCol: {
-      flex: 1,
-      paddingHorizontal: 6,
-    },
-    nameRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-    },
-    name: {
-      fontSize: 15,
-      color: theme.textPrimary,
+    numberText: {
+      fontSize: 12,
       fontWeight: '700',
-      marginRight: 6,
+      color: theme.textSecondary,
     },
-    ageTag: {
+    drawText: {
+      fontSize: 10,
+      fontWeight: 'normal',
+      color: theme.textTertiary,
+    },
+    formText: {
+      fontSize: 10.5,
+      fontWeight: '700',
+      color: theme.isDark ? '#93c5fd' : '#174ea6',
+      letterSpacing: 0.3,
+    },
+    nameText: {
+      fontSize: 12.5,
+      fontWeight: '700',
+      color: theme.textPrimary,
+    },
+    lastRunText: {
       fontSize: 11,
+      color: theme.textSecondary,
+      fontWeight: '500',
+    },
+    ageText: {
+      fontSize: 11,
+      color: theme.textSecondary,
+      fontWeight: '500',
+    },
+    weightText: {
+      fontSize: 10.5,
+      color: theme.textSecondary,
       fontWeight: '600',
-      color: theme.tagText,
-      backgroundColor: theme.tagBg,
+    },
+    jockeyText: {
+      fontSize: 10,
+      fontWeight: '600',
+      color: theme.textPrimary,
+    },
+    trainerText: {
+      fontSize: 9.5,
+      color: theme.textSecondary,
+      marginTop: 1,
+    },
+    ratingPill: {
+      backgroundColor: theme.ratingPillInactiveBg,
       paddingHorizontal: 5,
-      paddingVertical: 1,
-      borderRadius: 4,
-    },
-    metaRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      marginTop: 4,
-      gap: 6,
-    },
-    ratingBadge: {
-      flexDirection: 'row',
-      backgroundColor: theme.ratingBadgeBg,
-      borderWidth: 1,
-      borderColor: theme.ratingBadgeBorder,
-      paddingHorizontal: 6,
       paddingVertical: 2,
       borderRadius: 4,
+      minWidth: 32,
+      alignItems: 'center',
     },
-    ratingLabel: {
-      fontSize: 11,
-      fontWeight: '700',
-      color: theme.ratingLabel,
+    ratingPillActive: {
+      backgroundColor: theme.ratingPillBg,
+      borderWidth: 1,
+      borderColor: theme.ratingPillBorder,
     },
-    ratingValue: {
+    ratingPillText: {
+      fontSize: 10.5,
+      fontWeight: '600',
+      color: theme.ratingPillInactiveText,
+    },
+    ratingPillTextActive: {
       fontSize: 11,
       fontWeight: '800',
-      color: theme.ratingValue,
+      color: theme.ratingPillText,
     },
-    formBadge: {
-      flexDirection: 'row',
-      backgroundColor: theme.formBadgeBg,
+    oddsPill: {
+      backgroundColor: theme.oddsBadgeBg,
       paddingHorizontal: 6,
       paddingVertical: 2,
       borderRadius: 4,
+      minWidth: 36,
+      alignItems: 'center',
     },
-    formLabel: {
-      fontSize: 11,
-      fontWeight: '600',
-      color: theme.formLabel,
-    },
-    formValue: {
-      fontSize: 11,
-      fontWeight: '700',
-      color: theme.formValue,
-      letterSpacing: 0.5,
-    },
-    attributeText: {
-      fontSize: 11,
-      color: theme.attrText,
-      backgroundColor: theme.attrBg,
-      paddingHorizontal: 5,
-      paddingVertical: 2,
-      borderRadius: 4,
-    },
-    connectionsText: {
-      fontSize: 11,
-      color: theme.textTertiary,
-      marginTop: 4,
-    },
-    rightCol: {
-      alignItems: 'flex-end',
-      minWidth: 70,
-    },
-    oddsBadge: {
-      backgroundColor: theme.oddsBadgeBg,
-      paddingHorizontal: 7,
-      paddingVertical: 3,
-      borderRadius: 4,
-      marginBottom: 4,
-    },
-    oddsBadgeNR: {
+    oddsPillNR: {
       backgroundColor: theme.oddsNrBg,
     },
-    oddsText: {
-      fontSize: 12,
+    oddsPillText: {
+      fontSize: 11,
       fontWeight: '700',
       color: theme.oddsText,
     },
-    oddsTextNR: {
+    oddsPillTextNR: {
       color: theme.oddsNrText,
     },
-    winsBadge: {
-      backgroundColor: theme.winsBadgeBg,
-      paddingHorizontal: 7,
+    oddsDash: {
+      fontSize: 12,
+      color: theme.textTertiary,
+    },
+    pastBtn: {
+      backgroundColor: theme.pastBtnBg,
+      borderWidth: 1,
+      borderColor: theme.pastBtnBorder,
+      paddingHorizontal: 6,
       paddingVertical: 3,
       borderRadius: 4,
     },
-    winsBadgeZero: {
-      backgroundColor: theme.winsZeroBg,
+    pastBtnActive: {
+      backgroundColor: theme.pastBtnActiveBg,
+      borderColor: theme.pastBtnActiveBg,
     },
-    wins: {
-      fontSize: 12,
-      fontWeight: '700',
-      color: theme.winsText,
-    },
-    winsZero: {
-      color: theme.winsZeroText,
-      fontWeight: '500',
-    },
-    expandHint: {
+    pastBtnText: {
       fontSize: 10,
-      color: theme.expandHint,
-      marginTop: 4,
+      fontWeight: '700',
+      color: theme.pastBtnText,
+    },
+    pastBtnTextActive: {
+      color: theme.pastBtnActiveText,
+    },
+    pastNoneText: {
+      fontSize: 11,
+      color: theme.textTertiary,
+      fontStyle: 'italic',
     },
     pastSection: {
       borderTopWidth: 1,
       borderTopColor: theme.pastSectionBorder,
-      paddingHorizontal: 14,
+      paddingHorizontal: 12,
       paddingVertical: 8,
       backgroundColor: theme.pastBg,
     },
@@ -790,23 +887,23 @@ const createStyles = (theme) =>
     pastDate: {
       fontSize: 12,
       color: theme.pastDateText,
-      width: 72,
+      width: 75,
     },
     pastCourse: {
       fontSize: 12,
       color: theme.pastCourseText,
-      width: 48,
+      width: 50,
     },
     pastDist: {
       fontSize: 12,
       color: theme.pastDistText,
-      width: 38,
+      width: 40,
     },
     pastRtg: {
       fontSize: 11,
       fontWeight: '600',
       color: theme.pastRtgText,
-      width: 65,
+      width: 70,
     },
     pastPos: {
       fontSize: 12,
