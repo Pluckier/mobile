@@ -1024,7 +1024,7 @@ const createStyles = (theme, isCompact) =>
     },
     trainerText: {
       fontSize: 9.5,
-      color: theme.textSecondary,
+      color: theme.textPrimary,
       marginTop: 1,
     },
     ratingPill: {
