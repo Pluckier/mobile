@@ -1023,7 +1023,7 @@ const createStyles = (theme, isCompact) =>
       color: theme.textPrimary,
     },
     trainerText: {
-      fontSize: 9.5,
+      fontSize: 10,
       color: theme.textPrimary,
       marginTop: 1,
     },
