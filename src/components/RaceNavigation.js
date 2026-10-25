@@ -48,13 +48,14 @@ export default function RaceNavigation({
 
       {selectedRace && (
         <View style={styles.raceDetailsRow}>
-          <Text style={styles.navRaceSummary} numberOfLines={1}>
+          <Text style={styles.navRaceSummary}>
             {selectedRace?.time} {selectedRace?.place}
           </Text>
           {(selectedRace?.detail || selectedRace?.distance || selectedRace?.going) ? (
-            <Text style={styles.navRaceSubtitle} numberOfLines={1}>
-              {selectedRace?.detail}
+            <Text style={styles.navRaceSubtitle} numberOfLines={1} ellipsizeMode="tail">
               {selectedRace?.going ? ` ${selectedRace.going}` : ''}
+              {selectedRace?.distance ? ` ${selectedRace.distance} ` : ''}
+              {selectedRace?.detail}
             </Text>
           ) : null}
         </View>
