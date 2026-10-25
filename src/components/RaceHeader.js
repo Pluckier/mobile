@@ -1,56 +1,48 @@
-import { useState, useEffect, useCallback } from 'react';
-import { formatDateToDDMMYYYY } from '../utils/dateUtils';
+export const isHorseNR = (horse) => {
+  if (!horse) return false;
+  if (horse.number === 'NR' || horse.status === 'NR') return true;
 
-export const useRaceData = (initialDate = new Date()) => {
-  const [selectedDate, setSelectedDate] = useState(initialDate);
-  const [races, setRaces] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
+  const odds = horse.odds || [];
+  if (odds.length > 0) {
+    const last = odds[odds.length - 1];
+    return last === 'NR' || last === 'null' || last === 'Non-Runner';
+  }
 
-  const fetchRaces = useCallback(async (targetDate = selectedDate, isRefresh = false) => {
-    if (isRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
+  return false;
+};
+
+export const getAverageRating = (horse) => {
+  const runs = (horse?.past || []).slice(0, 3);
+  if (runs.length === 0) return 0;
+
+  const validRatings = runs
+    .map((r) => parseFloat(r?.name))
+    .filter((val) => !isNaN(val) && val > 0);
+
+  if (validRatings.length === 0) return 0;
+
+  const total = validRatings.reduce((acc, curr) => acc + curr, 0);
+  return total / validRatings.length;
+};
+
+export const sortHorses = (horses = []) => {
+  return [...horses].sort((a, b) => {
+    const isNRA = isHorseNR(a);
+    const isNRB = isHorseNR(b);
+
+    if (isNRA !== isNRB) {
+      return isNRA ? 1 : -1;
     }
 
-    setError(null);
-
-    try {
-      const dateStr = formatDateToDDMMYYYY(targetDate);
-      const url = `https://www.pluckier.co.uk/${dateStr}-races.json`;
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`Failed to load races (${response.status})`);
-      }
-
-      const data = await response.json();
-      const raceList = Array.isArray(data) ? data : [];
-      setRaces(raceList);
-    } catch (err) {
-      console.error('Error fetching race cards:', err);
-      setError(err.message || 'Unable to load races for this date');
-      setRaces([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+    const ratingA = getAverageRating(a);
+    const ratingB = getAverageRating(b);
+    if (ratingB !== ratingA) {
+      return ratingB - ratingA;
     }
-  }, [selectedDate]);
 
-  useEffect(() => {
-    fetchRaces(selectedDate);
-  }, [fetchRaces, selectedDate]);
-
-  return {
-    races,
-    loading,
-    refreshing,
-    error,
-    selectedDate,
-    setSelectedDate,
-    fetchRaces,
-  };
+    const numA = parseInt(a.number, 10) || 999;
+    const numB = parseInt(b.number, 10) || 999;
+    return numA - numB;
+  });
 };
 

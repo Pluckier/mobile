@@ -14,6 +14,7 @@ export default function PastRunsPanel({ rows, styles, itemName = null }) {
 
       {rows.slice(0, 12).map((run, rIdx) => {
         const isWin = String(run.position || '').trim().split('/')[0] === '1';
+
         return (
           <View key={`${run.date}-${run.time || rIdx}`} style={styles.pastRow}>
             <Text style={styles.pastDate}>{run.date}</Text>

@@ -1,247 +1,159 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
-import PastRunsPanel from './PastRunsPanel';
-import { isHorseNR, getAverageRating } from '../utils/horseUtils';
+export const getTheme = (isDark) => ({
+  isDark,
+  bg: isDark ? '#121212' : '#f1f3f4',
+  cardBg: isDark ? '#1e1e1e' : '#ffffff',
+  rowAltBg: isDark ? '#181b22' : '#f8f9fa',
+  headerBg: isDark ? '#1a2332' : '#1a73e8',
+  headerText: '#ffffff',
+  headerDateBg: 'rgba(255, 255, 255, 0.2)',
+  headerDateText: '#ffffff',
+  tableHeaderBg: isDark ? '#161e2e' : '#e9ecef',
+  tableHeaderBorder: isDark ? '#2e3846' : '#dadce0',
+  tableHeaderText: isDark ? '#93c5fd' : '#495057',
+  navBg: isDark ? '#1e1e1e' : '#ffffff',
+  navBorder: isDark ? '#2e3846' : '#dadce0',
+  navBtnBg: isDark ? '#2563eb' : '#1a73e8',
+  navBtnText: '#ffffff',
+  navBtnDisabledBg: isDark ? '#262626' : '#f1f3f4',
+  navBtnDisabledText: isDark ? '#525252' : '#9aa0a6',
+  navCounter: isDark ? '#60a5fa' : '#1a73e8',
+  navSummary: isDark ? '#f1f5f9' : '#202124',
+  textPrimary: isDark ? '#f8fafc' : '#202124',
+  textSecondary: isDark ? '#94a3b8' : '#5f6368',
+  textTertiary: isDark ? '#64748b' : '#70757a',
+  rowBorder: isDark ? '#262d3a' : '#eeeeee',
+  ratingPillBg: isDark ? '#2d2206' : '#fef7e0',
+  ratingPillBorder: isDark ? '#b45309' : '#f9ab00',
+  ratingPillText: isDark ? '#fbbf24' : '#b06000',
+  ratingPillInactiveBg: isDark ? '#262626' : '#f1f3f4',
+  ratingPillInactiveText: isDark ? '#525252' : '#9aa0a6',
+  oddsBadgeBg: isDark ? '#3b1219' : '#fce8e6',
+  oddsBadgeBgBlue: isDark ? '#11223f' : '#e8f0fe',
+  oddsText: isDark ? '#f87171' : '#c5221f',
+  oddsTextBlue: isDark ? '#60a5fa' : '#1a73e8',
+  oddsNrBg: isDark ? '#262626' : '#f1f3f4',
+  oddsNrText: isDark ? '#94a3b8' : '#5f6368',
+  pastBtnBg: isDark ? '#172554' : '#e8f0fe',
+  pastBtnBorder: isDark ? '#1e40af' : '#c2e7ff',
+  pastBtnText: isDark ? '#93c5fd' : '#1967d2',
+  pastBtnActiveBg: isDark ? '#2563eb' : '#1a73e8',
+  pastBtnActiveText: '#ffffff',
+  pastBg: isDark ? '#141416' : '#fafafa',
+  pastBorder: isDark ? '#27272a' : '#eeeeee',
+  pastSectionBorder: isDark ? '#2e3846' : '#dadce0',
+  pastDateText: isDark ? '#e2e8f0' : '#3c4043',
+  pastCourseText: isDark ? '#cbd5e1' : '#3c4043',
+  pastDistText: isDark ? '#94a3b8' : '#70757a',
+  pastRtgText: isDark ? '#f59e0b' : '#e37400',
+  pastPosText: isDark ? '#94a3b8' : '#5f6368',
+  pastPosWinText: isDark ? '#4ade80' : '#137333',
+  silksPlaceholderBg: isDark ? '#2a3342' : '#f1f3f4',
+  toggleBtnBg: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)',
+  toggleBtnText: '#ffffff',
+  statusBar: 'light-content',
+  statusBg: isDark ? '#1a2332' : '#1a73e8',
+  pillBg: isDark ? '#262626' : '#f1f3f4',
+});
 
-export default function HorseRow({
-  item,
-  index,
-  styles,
-  theme,
-  isCompact,
-  isExpanded,
-  onToggleExpand,
-}) {
-  const horseNum = item.number || index + 1;
-  const pastRuns = item.past || [];
-  const isNR = isHorseNR(item);
-  const avgRating = getAverageRating(item);
-  const latestOdd = Array.isArray(item.odds) && item.odds.length > 0 ? item.odds[item.odds.length - 1] : null;
-  const isOddRow = index % 2 === 1;
+export const createStyles = (theme, isCompact, scale = 1.0) => {
+  const s = (val) => Math.round(val * scale);
 
-  if (isCompact) {
-    return (
-      <View style={styles.rowContainer}>
-        <TouchableOpacity
-          style={[
-            styles.compactRow,
-            isOddRow && styles.rowAlt,
-            isNR && styles.nonRunnerRow,
-          ]}
-          onPress={() => onToggleExpand(item.name)}
-          activeOpacity={0.7}
-        >
-          <View style={styles.compactLine1}>
-            <View style={styles.compactSilksCol}>
-              {item.silks ? (
-                <Image source={{ uri: item.silks }} style={styles.silksImage} resizeMode="contain" />
-              ) : (
-                <View style={styles.silksPlaceholder}>
-                  <Text style={styles.silksPlaceholderText}>🏇</Text>
-                </View>
-              )}
-            </View>
-
-            <Text style={styles.compactNumberText}>
-              {`${horseNum}.`}
-              {item.draw ? <Text style={styles.drawText}>({item.draw})</Text> : null}
-            </Text>
-
-            <View style={styles.compactFormBadge}>
-              <Text style={styles.formText} numberOfLines={1}>
-                {item.form || '-'}
-              </Text>
-            </View>
-
-            <Text style={[styles.compactNameText, isNR && styles.nameTextNR]} numberOfLines={1}>
-              {item.name}
-            </Text>
-
-            <Text style={styles.compactMetaPill}>{item.lastRun ? `${item.lastRun}d` : '-'}</Text>
-            <Text style={styles.compactMetaPill}>{item.age ? `${item.age}y` : '-'}</Text>
-            <Text style={styles.compactWeightText}>{item.weight || '-'}</Text>
-          </View>
-
-          <View style={styles.compactLine2}>
-            <View style={styles.compactConnectionsCol}>
-              <Text style={styles.jockeyText} numberOfLines={1}>
-                {item.jockey ? `J: ${item.jockey}` : '-'}
-              </Text>
-              <Text style={styles.trainerText} numberOfLines={1}>
-                {item.trainer ? `T: ${item.trainer}` : '-'}
-              </Text>
-            </View>
-
-            <View style={styles.compactRightActions}>
-              <View style={[styles.ratingPill, avgRating > 0 && styles.ratingPillActive]}>
-                <Text style={[styles.ratingPillText, avgRating > 0 && styles.ratingPillTextActive]}>
-                  {avgRating > 0 ? `${Math.round(avgRating)}` : '-'}
-                </Text>
-              </View>
-
-              {isNR ? (
-                <View style={[styles.oddsPill, styles.oddsPillNR]}>
-                  <Text style={[styles.oddsPillText, styles.oddsPillTextNR]}>NR</Text>
-                </View>
-              ) : latestOdd ? (
-                <View style={styles.oddsPill}>
-                  <Text style={styles.oddsPillText}>{latestOdd}</Text>
-                </View>
-              ) : (
-                <Text style={styles.oddsDash}>-</Text>
-              )}
-
-              {pastRuns.length > 0 ? (
-                <View style={[styles.pastBtn, isExpanded && styles.pastBtnActive]}>
-                  <Text style={[styles.pastBtnText, isExpanded && styles.pastBtnTextActive]}>
-                    {`${pastRuns.length}`}
-                  </Text>
-                </View>
-              ) : (
-                <Text style={styles.pastNoneText}>none</Text>
-              )}
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {isExpanded && pastRuns.length > 0 && (
-          <PastRunsPanel rows={pastRuns} styles={styles} itemName={item.name} />
-        )}
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.rowContainer}>
-      <TouchableOpacity
-        style={[
-          styles.singleLineRow,
-          isOddRow && styles.rowAlt,
-          isNR && styles.nonRunnerRow,
-        ]}
-        onPress={() => onToggleExpand(item.name)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.colSilks}>
-          {item.silks ? (
-            <Image source={{ uri: item.silks }} style={styles.silksImage} resizeMode="contain" />
-          ) : (
-            <View style={styles.silksPlaceholder}>
-              <Text style={styles.silksPlaceholderText}>🏇</Text>
-            </View>
-          )}
-        </View>
-
-        <View style={styles.colNumber}>
-          <Text style={styles.numberText}>
-            {`${horseNum}.`}
-            {item.draw ? <Text style={styles.drawText}>({item.draw})</Text> : null}
-          </Text>
-        </View>
-
-        <View style={styles.colForm}>
-          <Text style={styles.formText} numberOfLines={1}>
-            {item.form || '-'}
-          </Text>
-        </View>
-
-        <View style={styles.colName}>
-          <Text style={[styles.nameText, isNR && styles.nameTextNR]} numberOfLines={1}>
-            {item.name}
-          </Text>
-        </View>
-
-        <View style={styles.colLastRun}>
-          <Text style={styles.lastRunText}>{item.lastRun ? `${item.lastRun}` : '-'}</Text>
-        </View>
-
-        <View style={styles.colAge}>
-          <Text style={styles.ageText}>{item.age ? `${item.age}yo` : '-'}</Text>
-        </View>
-
-        <View style={styles.colWeight}>
-          <Text style={styles.weightText}>{item.weight || '-'}</Text>
-        </View>
-
-        <View style={styles.colConnections}>
-          <Text style={styles.jockeyText} numberOfLines={1}>
-            {item.jockey ? `J: ${item.jockey}` : '-'}
-          </Text>
-          <Text style={styles.trainerText} numberOfLines={1}>
-            {item.trainer ? `T: ${item.trainer}` : '-'}
-          </Text>
-        </View>
-
-        <View style={styles.colRating}>
-          <View style={[styles.ratingPill, avgRating > 0 && styles.ratingPillActive]}>
-            <Text style={[styles.ratingPillText, avgRating > 0 && styles.ratingPillTextActive]}>
-              {avgRating > 0 ? Math.round(avgRating) : '-'}
-            </Text>
-          </View>
-        </View>
-
-        {isNR ? (
-          <View style={[styles.oddsPill, styles.oddsPillNR]}>
-            <Text style={[styles.oddsPillText, styles.oddsPillTextNR]}>NR</Text>
-          </View>
-        ) : latestOdd ? (
-          (() => {
-            const oddsArr = Array.isArray(item.odds) ? item.odds : [];
-            const prevOdd = oddsArr.length >= 2 ? parseFloat(oddsArr[oddsArr.length - 2]) : null;
-            const currentOddNum = parseFloat(latestOdd);
-
-            let badgeStyle = styles.oddsPill;
-            let textStyle = styles.oddsPillText;
-
-            if (!isNaN(prevOdd) && !isNaN(currentOddNum)) {
-              if (prevOdd > currentOddNum) {
-                badgeStyle = styles.oddsPill;
-                textStyle = styles.oddsPillText;
-              } else if (prevOdd < currentOddNum) {
-                badgeStyle = [styles.oddsPill, { backgroundColor: theme.oddsBadgeBgBlue }];
-                textStyle = [styles.oddsPillText, { color: theme.oddsTextBlue }];
-              } else {
-                badgeStyle = [styles.oddsPill, { backgroundColor: theme.isDark ? '#27272a' : '#5f6368' }];
-                textStyle = [styles.oddsPillText, { color: '#ffffff' }];
-              }
-            } else {
-              badgeStyle = [styles.oddsPill, { backgroundColor: theme.isDark ? '#27272a' : '#5f6368' }];
-              textStyle = [styles.oddsPillText, { color: '#ffffff' }];
-            }
-
-            return (
-              <View style={badgeStyle}>
-                <Text style={textStyle}>{latestOdd}</Text>
-              </View>
-            );
-          })()
-        ) : (
-          <Text style={styles.oddsDash}>-</Text>
-        )}
-
-        <View style={styles.colPast}>
-          {pastRuns.length > 0 ? (
-            <View style={[styles.pastBtn, isExpanded && styles.pastBtnActive]}>
-              <Text style={[styles.pastBtnText, isExpanded && styles.pastBtnTextActive]}>
-                {`${pastRuns.length}`}
-              </Text>
-            </View>
-          ) : (
-            <Text style={styles.pastNoneText}>none</Text>
-          )}
-        </View>
-      </TouchableOpacity>
-
-      {isExpanded && pastRuns.length > 0 && (
-        <PastRunsPanel rows={pastRuns} styles={styles} itemName={item.name} />
-      )}
-    </View>
-  );
-}
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.bg },
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: s(20), backgroundColor: theme.bg },
+    loadingText: { marginTop: s(12), fontSize: s(15), color: theme.textSecondary },
+    errorIcon: { fontSize: s(42), marginBottom: s(8) },
+    errorTitle: { fontSize: s(18), fontWeight: 'bold', color: theme.textPrimary, marginBottom: s(4) },
+    errorMessage: { fontSize: s(14), color: '#d93025', textAlign: 'center', marginBottom: s(16) },
+    retryBtn: { backgroundColor: theme.navBtnBg, paddingHorizontal: s(20), paddingVertical: s(10), borderRadius: 6 },
+    retryBtnText: { color: '#fff', fontWeight: '600', fontSize: s(15) },
+    header: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: theme.headerBg },
+    headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    headerActions: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    zoomToggleBtn: { backgroundColor: theme.toggleBtnBg, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+    zoomToggleText: { fontSize: 11.5, fontWeight: '700', color: theme.toggleBtnText },
+    themeToggleBtn: { backgroundColor: theme.toggleBtnBg, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+    themeToggleText: { fontSize: 11.5, fontWeight: '700', color: theme.toggleBtnText },
+    datePickerWrapper: { position: 'relative', flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.12)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+    title: { fontSize: 16, fontWeight: 'bold', color: theme.headerText, letterSpacing: 0.3 },
+    navBar: { flexDirection: 'row', alignItems: 'stretch', justifyContent: 'space-between', backgroundColor: theme.navBg, borderBottomWidth: 1, borderBottomColor: theme.navBorder },
+    navBtn: { flex: 1, backgroundColor: theme.navBtnBg, paddingHorizontal: 16, alignSelf: 'stretch', justifyContent: 'center', alignItems: 'center' },
+    navBtnDisabled: { backgroundColor: theme.navBtnDisabledBg },
+    navBtnText: { color: theme.navBtnText, fontWeight: '700', fontSize: 13 },
+    navBtnTextDisabled: { color: theme.navBtnDisabledText },
+    navCenter: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 8, maxWidth: '65%' },
+    navRaceCounter: { fontSize: 11, fontWeight: '700', color: theme.navCounter, textTransform: 'uppercase', letterSpacing: 0.5 },
+    navRaceSummary: { fontSize: 14.5, fontWeight: '700', color: theme.navSummary, marginTop: 2, textAlign: 'center' },
+    navRaceSubtitle: { fontSize: 12, color: theme.textSecondary, marginTop: 2, textAlign: 'center' },
+    tableScroll: { flex: 1, ...(Platform.OS === 'web' ? { scrollbarGutter: 'stable' } : {}) },
+    wideWrapper: { width: '100%', backgroundColor: theme.cardBg, paddingBottom: s(16), ...(Platform.OS === 'web' ? { marginRight: '-25px', paddingRight: '-25px' } : {}) },
+    compactWrapper: { backgroundColor: theme.bg, paddingVertical: 4, paddingBottom: 20 },
+    rowContainer: { width: '100%', borderBottomWidth: 1, borderBottomColor: theme.rowBorder, backgroundColor: theme.cardBg },
+    singleLineRow: { flexDirection: 'row', alignItems: 'center', width: '100%', paddingVertical: s(3), paddingHorizontal: s(8), backgroundColor: theme.cardBg },
+    compactRow: { paddingVertical: s(7), paddingHorizontal: s(10), backgroundColor: theme.cardBg, marginVertical: 2, marginHorizontal: 8, borderRadius: 6, borderWidth: 1, borderColor: theme.rowBorder },
+    compactLine1: { flexDirection: 'row', alignItems: 'center' },
+    compactSilksCol: { width: s(26), alignItems: 'center', justifyContent: 'center', marginRight: 4 },
+    compactNumberText: { fontSize: s(12), fontWeight: '700', color: theme.textSecondary, marginRight: 6 },
+    compactFormBadge: { backgroundColor: theme.isDark ? '#172554' : '#e8f0fe', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 3, marginRight: 6 },
+    compactNameText: { fontSize: s(13), fontWeight: '700', color: theme.textPrimary, flex: 1, marginRight: 6 },
+    compactMetaPill: { fontSize: s(10.5), fontWeight: '600', color: theme.textSecondary, backgroundColor: theme.pillBg, paddingHorizontal: 4, paddingVertical: 1, borderRadius: 3, marginRight: 4 },
+    compactWeightText: { fontSize: s(10.5), fontWeight: '600', color: theme.textSecondary },
+    compactLine2: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 5, paddingTop: 4, borderTopWidth: 0.5, borderTopColor: theme.pastBorder },
+    compactConnectionsCol: { flex: 1, marginRight: 8 },
+    compactRightActions: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    rowAlt: { backgroundColor: theme.rowAltBg },
+    nonRunnerRow: { opacity: 0.42, backgroundColor: theme.isDark ? '#141416' : '#f1f3f4' },
+    nameTextNR: { textDecorationLine: 'line-through', color: theme.textTertiary },
+    colSilks: { width: s(34), alignItems: 'center', justifyContent: 'center' },
+    colNumber: { width: s(28), alignItems: 'center', justifyContent: 'center' },
+    colForm: { width: s(62), paddingHorizontal: 2, justifyContent: 'center' },
+    colName: { flex: 2, minWidth: s(110), paddingHorizontal: 5, justifyContent: 'center' },
+    colLastRun: { width: s(38), alignItems: 'center', justifyContent: 'center' },
+    colAge: { width: s(32), alignItems: 'center', justifyContent: 'center' },
+    colWeight: { width: s(48), alignItems: 'center', justifyContent: 'center' },
+    colConnections: { flex: 2, minWidth: s(125), paddingHorizontal: 5, justifyContent: 'center' },
+    colRating: { width: s(48), alignItems: 'center', justifyContent: 'center' },
+    colPast: { width: s(48), alignItems: 'center', justifyContent: 'center' },
+    silksImage: { width: s(26), height: s(26) },
+    silksPlaceholder: { width: s(26), height: s(26), borderRadius: 4, backgroundColor: theme.silksPlaceholderBg, justifyContent: 'center', alignItems: 'center' },
+    silksPlaceholderText: { fontSize: s(14) },
+    numberText: { fontSize: s(12), fontWeight: '700', color: theme.textSecondary },
+    drawText: { fontSize: s(9.5), fontWeight: 'normal', color: theme.textTertiary },
+    formText: { fontSize: s(10.5), fontWeight: '700', color: theme.isDark ? '#93c5fd' : '#174ea6', letterSpacing: 0.3 },
+    nameText: { fontSize: s(13), fontWeight: '700', color: theme.textPrimary },
+    lastRunText: { fontSize: s(11), color: theme.textSecondary, fontWeight: '500' },
+    ageText: { fontSize: s(11), color: theme.textSecondary, fontWeight: '500' },
+    weightText: { fontSize: s(10.5), color: theme.textSecondary, fontWeight: '600' },
+    jockeyText: { fontSize: s(10), fontWeight: '600', color: theme.textPrimary },
+    trainerText: { fontSize: s(10), fontWeight: '600', color: theme.textPrimary, marginTop: 1 },
+    ratingPill: { backgroundColor: theme.ratingPillInactiveBg, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4, minWidth: s(32), alignItems: 'center' },
+    ratingPillActive: { backgroundColor: theme.ratingPillBg, borderWidth: 1, borderColor: theme.ratingPillBorder },
+    ratingPillText: { fontSize: s(10.5), fontWeight: '600', color: theme.ratingPillInactiveText },
+    ratingPillTextActive: { fontSize: s(11), fontWeight: '800', color: theme.ratingPillText },
+    oddsPill: { backgroundColor: theme.oddsBadgeBg, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, minWidth: s(36), alignItems: 'center' },
+    oddsPillNR: { backgroundColor: theme.oddsNrBg },
+    oddsPillText: { fontSize: s(11), fontWeight: '700', color: theme.oddsText },
+    oddsPillTextNR: { color: theme.oddsNrText },
+    oddsDash: { fontSize: s(12), color: theme.textTertiary },
+    pastBtn: { backgroundColor: theme.pastBtnBg, borderWidth: 1, borderColor: theme.pastBtnBorder, paddingHorizontal: 6, paddingVertical: 2.5, borderRadius: 4 },
+    pastBtnActive: { backgroundColor: theme.pastBtnActiveBg, borderColor: theme.pastBtnActiveBg },
+    pastBtnText: { fontSize: s(10), fontWeight: '700', color: theme.pastBtnText },
+    pastBtnTextActive: { color: theme.pastBtnActiveText },
+    pastNoneText: { fontSize: s(10.5), color: theme.textTertiary, fontStyle: 'italic' },
+    pastSection: { width: '100%', borderTopWidth: 1, borderTopColor: theme.pastSectionBorder, paddingHorizontal: s(12), paddingVertical: s(8), backgroundColor: theme.pastBg },
+    pastHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: s(6) },
+    pastHeader: { fontSize: s(10.5), fontWeight: '700', color: theme.textSecondary, textTransform: 'uppercase' },
+    pastRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: s(4), borderBottomWidth: 0.5, borderBottomColor: theme.pastBorder },
+    pastDate: { fontSize: s(11.5), color: theme.pastDateText, width: s(80) },
+    pastCourse: { fontSize: s(11.5), color: theme.pastCourseText, width: s(55) },
+    pastDist: { fontSize: s(11.5), color: theme.pastDistText, width: s(45) },
+    pastRtg: { fontSize: s(11), fontWeight: '600', color: theme.pastRtgText, width: s(75) },
+    pastPos: { fontSize: s(11.5), fontWeight: '600', color: theme.pastPosText, width: s(45) },
+    pastPosWin: { color: theme.pastPosWinText, fontWeight: '700' },
+    emptyContainer: { padding: s(24), alignItems: 'center' },
+    emptyText: { color: theme.textTertiary, fontSize: s(14) },
+  });
+};
 

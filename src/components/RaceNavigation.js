@@ -21,14 +21,16 @@ export default function RaceHeader({
           dateInputRef.current.showPicker();
           return;
         } catch (e) {
-          // Fallback if showPicker throws
+          // ignore and fall back as needed
         }
       }
 
       try {
         dateInputRef.current.focus();
         dateInputRef.current.click();
-      } catch (e) {}
+      } catch (e) {
+        // ignore click fallback errors
+      }
     }
   };
 

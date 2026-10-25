@@ -1,43 +1,176 @@
-export const isHorseNR = (horse) => {
-  if (!horse) return false;
-  if (horse.number === 'NR' || horse.status === 'NR') return true;
-  const odds = horse.odds || [];
-  if (odds.length > 0) {
-    const last = odds[odds.length - 1];
-    return last === 'NR' || last === 'null' || last === 'Non-Runner';
-  }
-  return false;
-};
+import React, { useState, useMemo } from 'react';
+import {
+  SafeAreaView,
+  StatusBar,
+  View,
+  Text,
+  ScrollView,
+  RefreshControl,
+  ActivityIndicator,
+  useColorScheme,
+  useWindowDimensions,
+} from 'react-native';
 
-export const getAverageRating = (horse) => {
-  const runs = (horse?.past || []).slice(0, 3);
-  if (runs.length === 0) return 0;
-  const validRatings = runs
-    .map((r) => parseFloat(r?.name))
-    .filter((val) => !isNaN(val) && val > 0);
-  if (validRatings.length === 0) return 0;
-  const sum = validRatings.reduce((acc, curr) => acc + curr, 0);
-  return sum / validRatings.length;
-};
+import RaceHeader from './src/components/RaceHeader';
+import RaceNavigation from './src/components/RaceNavigation';
+import HorseRow from './src/components/HorseRow';
+import { useRaceData } from './src/hooks/useRaceData';
+import { sortHorses } from './src/utils/horseUtils';
+import { getTheme, createStyles } from './styles';
 
-export const sortHorses = (horses = []) => {
-  return [...horses].sort((a, b) => {
-    const isNRA = isHorseNR(a);
-    const isNRB = isHorseNR(b);
+const ZOOM_CONFIGS = [
+  { scale: 1.0, label: '100%' },
+  { scale: 1.5, label: '150%' },
+  { scale: 2.0, label: '200%' },
+];
 
-    if (isNRA !== isNRB) {
-      return isNRA ? 1 : -1;
+export default function App() {
+  const { width } = useWindowDimensions();
+  const isCompact = width < 650;
+  const systemColorScheme = useColorScheme();
+
+  const [isDark, setIsDark] = useState(systemColorScheme === 'dark');
+  const [zoomIndex, setZoomIndex] = useState(0);
+  const [selectedRaceIndex, setSelectedRaceIndex] = useState(0);
+  const [expandedHorse, setExpandedHorse] = useState(null);
+
+  const { races, loading, refreshing, error, selectedDate, setSelectedDate, fetchRaces } =
+    useRaceData(new Date());
+
+  const theme = useMemo(() => getTheme(isDark), [isDark]);
+  const scale = ZOOM_CONFIGS[zoomIndex].scale;
+  const styles = useMemo(() => createStyles(theme, isCompact, scale), [theme, isCompact, scale]);
+
+  const selectedRace = races[selectedRaceIndex] || null;
+  const horses = useMemo(() => sortHorses(selectedRace?.horses || []), [selectedRace]);
+  const currentZoom = ZOOM_CONFIGS[zoomIndex];
+
+  const handleToggleZoom = () => {
+    setZoomIndex((prev) => (prev + 1) % ZOOM_CONFIGS.length);
+  };
+
+  const handlePrevRace = () => {
+    if (selectedRaceIndex > 0) {
+      setSelectedRaceIndex((prev) => prev - 1);
+      setExpandedHorse(null);
     }
+  };
 
-    const ratingA = getAverageRating(a);
-    const ratingB = getAverageRating(b);
-    if (ratingB !== ratingA) {
-      return ratingB - ratingA;
+  const handleNextRace = () => {
+    if (selectedRaceIndex < races.length - 1) {
+      setSelectedRaceIndex((prev) => prev + 1);
+      setExpandedHorse(null);
     }
+  };
 
-    const numA = parseInt(a.number, 10) || 999;
-    const numB = parseInt(b.number, 10) || 999;
-    return numA - numB;
-  });
-};
+  const handleDateSelect = (nextDate) => {
+    if (nextDate instanceof Date && !isNaN(nextDate.getTime())) {
+      setSelectedDate(nextDate);
+      setSelectedRaceIndex(0);
+      setExpandedHorse(null);
+    }
+  };
+
+  const toggleExpand = (horseKey) => {
+    setExpandedHorse((prev) => (prev === horseKey ? null : horseKey));
+  };
+
+  const handleRefresh = () => {
+    fetchRaces(selectedDate, true);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle={theme.statusBar} backgroundColor={theme.statusBg} />
+
+      <RaceHeader
+        styles={styles}
+        selectedDate={selectedDate}
+        onDateChange={handleDateSelect}
+        isDark={isDark}
+        onToggleTheme={() => setIsDark((prev) => !prev)}
+        onToggleZoom={handleToggleZoom}
+        zoomLabel={currentZoom.label}
+      />
+
+      {races.length > 0 && (
+        <RaceNavigation
+          styles={styles}
+          races={races}
+          selectedRaceIndex={selectedRaceIndex}
+          selectedRace={selectedRace}
+          onPrevRace={handlePrevRace}
+          onNextRace={handleNextRace}
+        />
+      )}
+
+      {loading && !refreshing ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={theme.navBtnBg} />
+          <Text style={styles.loadingText}>Fetching race cards...</Text>
+        </View>
+      ) : error && races.length === 0 ? (
+        <View style={styles.center}>
+          <Text style={styles.errorIcon}>⚠️</Text>
+          <Text style={styles.errorTitle}>Could not load race cards</Text>
+          <Text style={styles.errorMessage}>{error}</Text>
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+            <Text style={[styles.retryBtn, styles.retryBtnText]} onPress={() => fetchRaces(selectedDate)}>
+              Retry
+            </Text>
+            <Text
+              style={[
+                styles.retryBtn,
+                { backgroundColor: theme.isDark ? '#27272a' : '#5f6368' },
+                styles.retryBtnText,
+              ]}
+              onPress={() => setSelectedDate(new Date())}
+            >
+              Today
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <ScrollView
+          style={styles.tableScroll}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[theme.navBtnBg]} />
+          }
+        >
+          {isCompact ? (
+            <View style={styles.compactWrapper}>
+              {horses.map((item, index) => (
+                <HorseRow
+                  key={`${item.name}-${item.number || index}`}
+                  item={item}
+                  index={index}
+                  styles={styles}
+                  theme={theme}
+                  isCompact
+                  isExpanded={expandedHorse === item.name}
+                  onToggleExpand={toggleExpand}
+                />
+              ))}
+            </View>
+          ) : (
+            <View style={styles.wideWrapper}>
+              {horses.map((item, index) => (
+                <HorseRow
+                  key={`${item.name}-${item.number || index}`}
+                  item={item}
+                  index={index}
+                  styles={styles}
+                  theme={theme}
+                  isCompact={false}
+                  isExpanded={expandedHorse === item.name}
+                  onToggleExpand={toggleExpand}
+                />
+              ))}
+            </View>
+          )}
+        </ScrollView>
+      )}
+    </SafeAreaView>
+  );
+}
 

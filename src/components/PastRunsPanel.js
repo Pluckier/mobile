@@ -23,18 +23,16 @@ export default function RaceNavigation({
       </TouchableOpacity>
 
       <View style={styles.navCenter}>
-        <Text style={styles.navRaceCounter}>
-          Race {selectedRaceIndex + 1} of {races.length}
-        </Text>
+        <Text style={styles.navRaceCounter}>Race {selectedRaceIndex + 1} of {races.length}</Text>
         <Text style={styles.navRaceSummary} numberOfLines={1}>
           {selectedRace?.time} {selectedRace?.place}
         </Text>
-        {(selectedRace?.distance || selectedRace?.going) ? (
+        {(selectedRace?.distance || selectedRace?.going) && (
           <Text style={styles.navRaceSubtitle} numberOfLines={1}>
             {selectedRace.detail}
             {selectedRace?.going ? ` ${selectedRace.going}` : ''}
           </Text>
-        ) : null}
+        )}
       </View>
 
       <TouchableOpacity
