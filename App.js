@@ -593,10 +593,10 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle={theme.statusBar} backgroundColor={theme.statusBg} />
 
-      {/* Race Overview Card */}
+      {/* App Header Bar */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.title}>{selectedRace?.place || 'No Races'}</Text>
+          <Text style={styles.title}>{getFormattedToday()}</Text>
           <View style={styles.headerActions}>
             <TouchableOpacity
               style={styles.zoomToggleBtn}
@@ -612,21 +612,8 @@ export default function App() {
             >
               <Text style={styles.themeToggleText}>{isDark ? '☀️ Light' : '🌙 Dark'}</Text>
             </TouchableOpacity>
-            <Text style={styles.dateBadge}>{getFormattedToday()}</Text>
           </View>
         </View>
-
-        <Text style={styles.subtitle}>
-          {selectedRace?.time ? `${selectedRace.time} Race Card` : 'No race selected'}
-          {selectedRace?.distance ? ` • ${selectedRace.distance}` : ''}
-          {selectedRace?.going ? ` • Going: ${selectedRace.going}` : ''}
-        </Text>
-
-        {selectedRace?.detail ? (
-          <Text style={styles.raceDetail} numberOfLines={2}>
-            {selectedRace.detail}
-          </Text>
-        ) : null}
       </View>
 
       {/* Prev / Next Sequential Race Navigation */}
@@ -650,6 +637,18 @@ export default function App() {
             <Text style={styles.navRaceSummary} numberOfLines={1}>
               {selectedRace?.time} {selectedRace?.place}
             </Text>
+            {(selectedRace?.distance || selectedRace?.going) ? (
+              <Text style={styles.navRaceSubtitle} numberOfLines={1}>
+                {selectedRace?.distance ? selectedRace.distance : ''}
+                {selectedRace?.distance && selectedRace?.going ? ' • ' : ''}
+                {selectedRace?.going ? `Going: ${selectedRace.going}` : ''}
+              </Text>
+            ) : null}
+            {selectedRace?.detail ? (
+              <Text style={styles.navRaceDetail} numberOfLines={2}>
+                {selectedRace.detail}
+              </Text>
+            ) : null}
           </View>
 
           <TouchableOpacity
@@ -742,8 +741,7 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
     },
     header: {
       paddingHorizontal: 12,
-      paddingTop: 10,
-      paddingBottom: 8,
+      paddingVertical: 8,
       backgroundColor: theme.headerBg,
     },
     headerTop: {
@@ -779,9 +777,10 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
       color: theme.toggleBtnText,
     },
     title: {
-      fontSize: 22,
+      fontSize: 16,
       fontWeight: 'bold',
       color: theme.headerText,
+      letterSpacing: 0.3,
     },
     dateBadge: {
       fontSize: 11.5,
@@ -791,16 +790,6 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
       paddingHorizontal: 7,
       paddingVertical: 4,
       borderRadius: 12,
-    },
-    subtitle: {
-      fontSize: 13,
-      color: theme.headerSubtitle,
-      marginTop: 3,
-    },
-    raceDetail: {
-      fontSize: 11.5,
-      color: theme.headerDetail,
-      marginTop: 3,
     },
     navBar: {
       flexDirection: 'row',
@@ -842,10 +831,23 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
       letterSpacing: 0.5,
     },
     navRaceSummary: {
-      fontSize: 13.5,
+      fontSize: 14.5,
       fontWeight: '700',
       color: theme.navSummary,
       marginTop: 2,
+      textAlign: 'center',
+    },
+    navRaceSubtitle: {
+      fontSize: 12,
+      color: theme.textSecondary,
+      marginTop: 2,
+      textAlign: 'center',
+    },
+    navRaceDetail: {
+      fontSize: 11,
+      color: theme.textTertiary,
+      marginTop: 2,
+      textAlign: 'center',
     },
     tableScroll: {
       flex: 1,
@@ -859,6 +861,12 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
       width: '100%',
       backgroundColor: theme.cardBg,
       paddingBottom: s(16),
+      ...(Platform.OS === 'web'
+        ? {
+          marginRight: '-25px',
+          paddingRight: '-25px',
+        }
+        : {}),
     },
     compactWrapper: {
       backgroundColor: theme.bg,
@@ -1025,7 +1033,7 @@ const createStyles = (theme, isCompact, scale = 1.0) => {
       justifyContent: 'center',
     },
     colPast: {
-      width: s(74),
+      width: s(48),
       alignItems: 'center',
       justifyContent: 'center',
     },
