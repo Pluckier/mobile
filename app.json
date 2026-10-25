@@ -18,7 +18,9 @@
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png",
+      "favicon": "./assets/favicon.png"
+    },
+    "experiments": {
       "baseUrl": "/mobile"
     }
   }

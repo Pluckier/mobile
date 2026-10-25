@@ -16,8 +16,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "predeploy": "npx expo export --platform web",
-    "deploy": "gh-pages -d dist"
+    "predeploy": "npx expo export --platform web && touch dist/.nojekyll && cp dist/index.html dist/404.html",
+    "deploy": "cd dist && git init && git checkout -b gh-pages && git add . && git commit -m \"Deploying Expo web\" && git remote add origin git@github-pluckier:Pluckier/mobile.git && git push -f origin gh-pages"
   },
   "private": true,
   "devDependencies": {
