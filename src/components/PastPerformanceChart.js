@@ -47,7 +47,24 @@ const PastPerformanceChart = ({ horses = [], theme = {}, scale = 1 }) => {
 
   const [tooltip, setTooltip] = useState(null);
 
-  const validHorses = useMemo(() => horses.filter((h) => h.past && h.past.length > 0), [horses]);
+  const validHorses = useMemo(() => {
+    return horses.filter((h) => {
+      // 1. Check if past history data exists
+      if (!h.past || h.past.length === 0) return false;
+
+      // 2. Extract the latest odd exactly like your point builder does
+      const latestOdd = Array.isArray(h.odds) && h.odds.length > 0
+        ? h.odds[h.odds.length - 1]
+        : null;
+
+      // 3. If it's missing (null) or explicitly 'NR', drop the horse
+      if (latestOdd === null || String(latestOdd).toUpperCase() === 'NR' || String(latestOdd) === 'null') {
+        return false;
+      }
+
+      return true;
+    });
+  }, [horses]);
 
   // --- Build all data points with real timestamps ---
   const allPoints = useMemo(() => {
