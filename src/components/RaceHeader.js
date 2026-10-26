@@ -42,7 +42,7 @@ export default function RaceHeader({
           onPress={handleOpenDatePicker}
           activeOpacity={0.7}
         >
-          <Text style={styles.title}>📅 {formatDateToDDMMYYYY(selectedDate)}</Text>
+          <Text style={styles.title}>📅 <Text style={styles.headerDateText}>{formatDateToDDMMYYYY(selectedDate)}</Text></Text>
 
           {Platform.OS === 'web' && (
             <input

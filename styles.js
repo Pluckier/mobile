@@ -79,6 +79,7 @@ export const createStyles = (theme, isCompact, scale = 1.0) => {
     themeToggleText: { fontSize: 11.5, fontWeight: '700', color: theme.toggleBtnText },
     datePickerWrapper: { position: 'relative', flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.12)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
     title: { fontSize: 16, fontWeight: 'bold', color: theme.headerText, letterSpacing: 0.3 },
+    headerDateText: { color: theme.headerDateText, backgroundColor: theme.headerDateBg, paddingHorizontal: 4, borderRadius: 4 },
     navContainer: { width: '100%', backgroundColor: theme.navBg, borderBottomWidth: 1, borderBottomColor: theme.navBorder },
     navBar: { flexDirection: 'row', alignItems: 'stretch', justifyContent: 'space-between', backgroundColor: theme.navBg, borderBottomWidth: 0.5, borderBottomColor: theme.navBorder },
     navBtn: { flex: 1, backgroundColor: theme.navBtnBg, paddingHorizontal: 16, paddingVertical: 20, justifyContent: 'center', alignItems: 'center' },
