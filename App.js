@@ -18,6 +18,7 @@ import { useRaceData } from './src/hooks/useRaceData';
 import { sortHorses } from './src/utils/horseUtils';
 import { getTheme, createStyles } from './styles';
 import { ZOOM_CONFIGS } from './src/constants/zoomConfig';
+import { useZoomStore } from './src/store';
 
 export default function App() {
   const { width } = useWindowDimensions();
@@ -25,7 +26,8 @@ export default function App() {
   const systemColorScheme = useColorScheme();
 
   const [isDark, setIsDark] = useState(systemColorScheme === 'dark');
-  const [zoomIndex, setZoomIndex] = useState(1);
+  const zoomIndex = useZoomStore((state) => state.zoomIndex);
+  const toggleZoom = useZoomStore((state) => state.toggleZoom);
   const [selectedRaceIndex, setSelectedRaceIndex] = useState(0);
   const [expandedHorses, setExpandedHorses] = useState(() => new Set());
 
@@ -41,7 +43,7 @@ export default function App() {
   const currentZoom = ZOOM_CONFIGS[zoomIndex];
 
   const handleToggleZoom = () => {
-    setZoomIndex((prev) => (prev + 1) % ZOOM_CONFIGS.length);
+    toggleZoom();
   };
 
   const handlePrevRace = () => {
