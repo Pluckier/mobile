@@ -35,14 +35,21 @@ const shortDate = (str) => {
  *      name: string
  *      past: Array<{ name: string (numeric rating), date: "DD/MM/YYYY", ... }>
  */
-const PastPerformanceChart = ({ horses = [], theme = {} }) => {
+const PastPerformanceChart = ({ horses = [], theme = {}, scale = 1 }) => {
   // Theme-aware colors with sensible dark-mode fallbacks
-  const chartBg    = theme.pastBg        || '#0f172a';
-  const gridColor  = theme.pastBorder    || '#1e293b';
-  const axisText   = theme.textTertiary  || '#6b7280';
-  const legendText = theme.textPrimary   || '#d1d5db';
-  const tooltipBg  = theme.cardBg        || '#1e293b';
-  const tooltipTxt = theme.textPrimary   || '#f1f5f9';
+  const chartBg = theme.pastBg || '#0f172a';
+  const gridColor = theme.pastBorder || '#1e293b';
+  const axisText = theme.textTertiary || '#6b7280';
+  const legendText = theme.textPrimary || '#d1d5db';
+  const tooltipBg = theme.cardBg || '#1e293b';
+  const tooltipTxt = theme.textPrimary || '#f1f5f9';
+
+  // Zoom-aware sizes — height stays fixed, text/dots scale subtly
+  const dotRadius = Math.round(1.5 * scale);
+  const strokeW = Math.max(1, 1.1 * scale);
+  const axisFontSize = Math.round(8 * scale);
+  const labelFontSize = Math.round(9 * scale);
+  const chartH = 220; // fixed height regardless of zoom
 
   const [tooltip, setTooltip] = useState(null);
 
@@ -84,8 +91,7 @@ const PastPerformanceChart = ({ horses = [], theme = {} }) => {
 
   // --- Chart dimensions ---
   const screenW = Dimensions.get('window').width;
-  const chartW = screenW - 62;
-  const chartH = 220;
+  const chartW = screenW - 32;
   const innerW = chartW - PAD.left - PAD.right;
   const innerH = chartH - PAD.top - PAD.bottom;
 
@@ -158,7 +164,7 @@ const PastPerformanceChart = ({ horses = [], theme = {} }) => {
               />
               <SvgText
                 x={PAD.left - 4} y={y + 4}
-                fontSize={9} fill={axisText} textAnchor="end"
+                fontSize={axisFontSize} fill={axisText} textAnchor="end"
               >
                 {Math.round(val)}
               </SvgText>
@@ -176,7 +182,7 @@ const PastPerformanceChart = ({ horses = [], theme = {} }) => {
                 />
                 <SvgText
                   x={x} y={chartH - PAD.bottom + 14}
-                  fontSize={9} fill={axisText} textAnchor="middle"
+                  fontSize={axisFontSize} fill={axisText} textAnchor="middle"
                 >
                   {shortDate(date)}
                 </SvgText>
@@ -206,7 +212,7 @@ const PastPerformanceChart = ({ horses = [], theme = {} }) => {
                 points={pointsStr}
                 fill="none"
                 stroke={color}
-                strokeWidth={2}
+                strokeWidth={strokeW}
                 strokeLinejoin="round"
               />
             );
@@ -217,7 +223,7 @@ const PastPerformanceChart = ({ horses = [], theme = {} }) => {
             pts.map((p, i) => (
               <Circle
                 key={`${name}-${i}`}
-                cx={p.x} cy={p.y} r={4}
+                cx={p.x} cy={p.y} r={dotRadius}
                 fill={color}
                 onPress={() => setTooltip(p)}
               />
@@ -236,7 +242,7 @@ const PastPerformanceChart = ({ horses = [], theme = {} }) => {
                 key={`label-${name}`}
                 x={peak.x + xOffset}
                 y={peak.y - 8}
-                fontSize={11}
+                fontSize={labelFontSize}
                 fill={color}
                 fontWeight="bold"
                 textAnchor="middle"
@@ -279,15 +285,15 @@ const PastPerformanceChart = ({ horses = [], theme = {} }) => {
               {tooltip.horse}
             </Text>
             {[
-              { label: 'Date',       value: tooltip.date },
-              { label: 'Rating',     value: tooltip.val },
-              { label: 'Position',   value: tooltip.position },
-              { label: 'Weight',     value: tooltip.weight },
-              { label: 'Course',     value: tooltip.course },
-              { label: 'Distance',   value: tooltip.distance },
-              { label: 'Going',      value: tooltip.going },
-              { label: 'Class',      value: tooltip.raceClass },
-              { label: 'Dist Beaten',value: tooltip.distBeaten },
+              { label: 'Date', value: tooltip.date },
+              { label: 'Rating', value: tooltip.val },
+              { label: 'Position', value: tooltip.position },
+              { label: 'Weight', value: tooltip.weight },
+              { label: 'Course', value: tooltip.course },
+              { label: 'Distance', value: tooltip.distance },
+              { label: 'Going', value: tooltip.going },
+              { label: 'Class', value: tooltip.raceClass },
+              { label: 'Dist Beaten', value: tooltip.distBeaten },
             ].map(({ label, value }) =>
               value != null ? (
                 <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3 }}>

@@ -144,7 +144,7 @@ export default function App() {
           }
         >
           {horses.length > 0 && (
-            <PastPerformanceChart horses={horses} theme={theme} />
+            <PastPerformanceChart horses={horses} theme={theme} scale={scale} />
           )}
           {horses.length === 0 ? (
             <View style={styles.emptyContainer}>
