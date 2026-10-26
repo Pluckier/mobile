@@ -19,6 +19,7 @@ import { sortHorses } from './src/utils/horseUtils';
 import { getTheme, createStyles } from './styles';
 import { ZOOM_CONFIGS } from './src/constants/zoomConfig';
 import { useZoomStore } from './src/store';
+import PastPerformanceChart from './src/components/PastPerformanceChart';
 
 export default function App() {
   const { width } = useWindowDimensions();
@@ -142,6 +143,9 @@ export default function App() {
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[theme.navBtnBg]} />
           }
         >
+          {horses.length > 0 && (
+            <PastPerformanceChart horses={horses} theme={theme} />
+          )}
           {horses.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>No horses listed for this race card.</Text>
