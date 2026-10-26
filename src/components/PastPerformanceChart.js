@@ -3,8 +3,8 @@
 // Each horse gets its own line; points are placed at their actual race date.
 
 import React, { useState } from 'react';
-import { View, Text, Dimensions, ScrollView } from 'react-native';
-import Svg, { Polyline, Circle, Text as SvgText, Line, G, Rect } from 'react-native-svg';
+import { View, Text, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
+import Svg, { Polyline, Circle, Text as SvgText, Line, G } from 'react-native-svg';
 
 const COLORS = [
   '#ff6f61', '#a78bfa', '#4ade80', '#f472b6',
@@ -117,8 +117,16 @@ const PastPerformanceChart = ({ horses = [], theme = {} }) => {
         x: xOf(parseDate(p.date)),
         y: yOf(parseFloat(p.name)),
         val: parseFloat(p.name),
+        // Store all fields for the tooltip
         date: p.date,
         horse: horse.name,
+        position: p.position,
+        weight: p.weight,
+        course: p.course,
+        distance: p.distance,
+        going: p.going,
+        raceClass: p.raceClass,
+        distBeaten: p.distBeaten,
       }));
     return { name: horse.name, color: COLORS[idx % COLORS.length], pts };
   });
@@ -211,52 +219,87 @@ const PastPerformanceChart = ({ horses = [], theme = {} }) => {
                 key={`${name}-${i}`}
                 cx={p.x} cy={p.y} r={4}
                 fill={color}
-                onPress={() => setTooltip({ x: p.x, y: p.y, val: p.val, date: p.date, horse: p.horse })}
+                onPress={() => setTooltip(p)}
               />
             ))
           )}
 
-          {/* Horse name label at the end of each line */}
+          {/* Horse name label at the peak (highest rating) of each line */}
           {horseLines.map(({ name, color, pts }, lineIdx) => {
             if (pts.length === 0) return null;
-            const last = pts[pts.length - 1];
-            // Stagger labels vertically to reduce overlap
-            const yOffset = (lineIdx % 3) * -10;
+            // Find the point with the smallest y value = highest on the chart
+            const peak = pts.reduce((best, p) => (p.y < best.y ? p : best), pts[0]);
+            // Stagger slightly to reduce overlap when peaks coincide
+            const xOffset = (lineIdx % 3) * 4;
             return (
               <SvgText
                 key={`label-${name}`}
-                x={last.x + 6}
-                y={last.y + yOffset}
-                fontSize={8}
+                x={peak.x + xOffset}
+                y={peak.y - 8}
+                fontSize={11}
                 fill={color}
                 fontWeight="bold"
+                textAnchor="middle"
               >
-                {name.split(' ')[0]}
+                {name}
               </SvgText>
             );
           })}
 
 
-          {/* Tooltip */}
-          {tooltip && (
-            <G>
-              <Rect
-                x={Math.min(tooltip.x + 4, chartW - 80)}
-                y={Math.max(tooltip.y - 28, PAD.top)}
-                width={76} height={22} rx={4}
-                fill={tooltipBg} opacity={0.95}
-              />
-              <SvgText
-                x={Math.min(tooltip.x + 8, chartW - 76)}
-                y={Math.max(tooltip.y - 12, PAD.top + 14)}
-                fontSize={9} fill={tooltipTxt}
-              >
-                {`${tooltip.horse}: ${tooltip.val} (${shortDate(tooltip.date)})`}
-              </SvgText>
-            </G>
-          )}
+
+
         </Svg>
       </ScrollView>
+
+      {/* Rich tooltip overlay card */}
+      {tooltip && (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setTooltip(null)}
+          style={{
+            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+            justifyContent: 'center', alignItems: 'center',
+          }}
+        >
+          <View style={{
+            backgroundColor: tooltipBg,
+            borderRadius: 10,
+            padding: 12,
+            minWidth: 200,
+            borderWidth: 1,
+            borderColor: gridColor,
+            shadowColor: '#000',
+            shadowOpacity: 0.4,
+            shadowRadius: 8,
+            elevation: 8,
+          }}>
+            {/* Horse name header */}
+            <Text style={{ color: legendText, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>
+              {tooltip.horse}
+            </Text>
+            {[
+              { label: 'Date',       value: tooltip.date },
+              { label: 'Rating',     value: tooltip.val },
+              { label: 'Position',   value: tooltip.position },
+              { label: 'Weight',     value: tooltip.weight },
+              { label: 'Course',     value: tooltip.course },
+              { label: 'Distance',   value: tooltip.distance },
+              { label: 'Going',      value: tooltip.going },
+              { label: 'Class',      value: tooltip.raceClass },
+              { label: 'Dist Beaten',value: tooltip.distBeaten },
+            ].map(({ label, value }) =>
+              value != null ? (
+                <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3 }}>
+                  <Text style={{ color: axisText, fontSize: 11, marginRight: 12 }}>{label}</Text>
+                  <Text style={{ color: legendText, fontSize: 11, fontWeight: '600' }}>{value}</Text>
+                </View>
+              ) : null
+            )}
+            <Text style={{ color: axisText, fontSize: 10, marginTop: 8, textAlign: 'center' }}>Tap anywhere to dismiss</Text>
+          </View>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
