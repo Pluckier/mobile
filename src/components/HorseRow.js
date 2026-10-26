@@ -111,7 +111,7 @@ export default function HorseRow({
         </TouchableOpacity>
 
         {isExpanded && pastRuns.length > 0 && (
-          <PastRunsPanel rows={pastRuns} styles={styles} itemName={item.name} />
+          <PastRunsPanel rows={pastRuns} styles={styles} horse={item} itemName={item.name} />
         )}
       </View>
     );
@@ -239,7 +239,7 @@ export default function HorseRow({
       </TouchableOpacity>
 
       {isExpanded && pastRuns.length > 0 && (
-        <PastRunsPanel rows={pastRuns} styles={styles} itemName={item.name} />
+        <PastRunsPanel rows={pastRuns} styles={styles} horse={item} itemName={item.name} />
       )}
     </View>
   );

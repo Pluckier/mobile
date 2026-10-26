@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Linking, Platform } from 'react-native';
 
-export default function PastRunsPanel({ rows, styles, itemName = null }) {
+export default function PastRunsPanel({ rows, styles, horse = {}, itemName = null }) {
   if (!rows || rows.length === 0) return null;
 
   const handleOpenUrl = (url) => {
@@ -16,9 +16,29 @@ export default function PastRunsPanel({ rows, styles, itemName = null }) {
   return (
     <View style={styles.pastSection}>
       <View style={styles.pastHeaderRow}>
-        <Text style={styles.pastHeader}>
-          {itemName ? `Past Performance History (${itemName})` : 'Past Performance History'}
-        </Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.pastHeader}>
+            {itemName ? `Past Performance History (${itemName})` : 'Past Performance History'}
+          </Text>
+
+          <View style={styles.metaBadgeRow}>
+            {horse?.owner && (
+              <View style={styles.metaBadge}>
+                <Text style={styles.metaBadgeText}>Owner: {horse.owner}</Text>
+              </View>
+            )}
+            {horse?.breeding && (
+              <View style={styles.metaBadge}>
+                <Text style={styles.metaBadgeText}>{horse.breeding}</Text>
+              </View>
+            )}
+            {horse?.foaled && (
+              <View style={styles.metaBadge}>
+                <Text style={styles.metaBadgeText}>Born: {horse.foaled}</Text>
+              </View>
+            )}
+          </View>
+        </View>
       </View>
 
       {rows.slice(0, 12).map((run, rIdx) => {

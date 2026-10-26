@@ -48,6 +48,7 @@ export const getTheme = (isDark) => ({
   pastDistText: isDark ? '#94a3b8' : '#70757a',
   pastRtgText: isDark ? '#c084fc' : '#6d28d9',
   pastPosText: isDark ? '#94a3b8' : '#5f6368',
+  headerText: isDark ? '#262626' : '#f3f4f6',
   pastPosWinText: isDark ? '#4ade80' : '#137333',
   silksPlaceholderBg: isDark ? '#2a3342' : '#f1f3f4',
   toggleBtnBg: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)',
@@ -145,8 +146,40 @@ export const createStyles = (theme, isCompact, scale = 1.0) => {
     pastBtnTextActive: { color: theme.pastBtnActiveText },
     pastNoneText: { fontSize: s(10.5), color: theme.textTertiary, fontStyle: 'italic' },
     pastSection: { width: '100%', borderTopWidth: 1, borderTopColor: theme.pastSectionBorder, paddingHorizontal: s(12), paddingVertical: s(8), backgroundColor: theme.pastBg },
-    pastHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: s(6) },
-    pastHeader: { fontSize: s(10.5), fontWeight: '700', color: theme.textSecondary, textTransform: 'uppercase' },
+    pastHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: s(10),
+      paddingVertical: s(4),
+    },
+    titleContainer: {
+      flex: 1,
+    },
+    pastHeader: {
+      fontSize: s(12),            // Bumped up slightly for clear hierarchy
+      fontWeight: '800',
+      color: theme.textPrimary,   // Switched to primary text to anchor the section
+      marginBottom: s(4),
+    },
+    metaBadgeRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',           // Safely wraps down if the text is long on small screens
+      gap: s(6),                  // Clean spacing between tags
+      marginTop: s(2),
+    },
+    metaBadge: {
+      backgroundColor: theme.headerText, // Neutral, subtle backdrop
+      paddingHorizontal: s(6),
+      paddingVertical: s(2),
+      borderRadius: 4,
+    },
+    metaBadgeText: {
+      fontSize: s(9.5),
+      fontWeight: '600',
+      color: theme.textSecondary, // Muted text for supplementary info
+    },
+
     pastRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: s(4), borderBottomWidth: 0.5, borderBottomColor: theme.pastBorder },
     pastDate: { fontSize: s(11.5), color: theme.pastDateText, width: s(80) },
     pastDateLink: { color: theme.navCounter, textDecorationLine: 'underline', ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}) },
