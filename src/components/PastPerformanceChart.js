@@ -45,7 +45,7 @@ const PastPerformanceChart = ({ horses = [], theme = {}, scale = 1 }) => {
   const tooltipTxt = theme.textPrimary || '#f1f5f9';
 
   // Zoom-aware sizes — height stays fixed, text/dots scale subtly
-  const dotRadius = Math.round(1.5 * scale);
+  const dotRadius = Math.round(2 * scale);
   const strokeW = Math.max(1, 1.1 * scale);
   const axisFontSize = Math.round(8 * scale);
   const labelFontSize = Math.round(9 * scale);
@@ -133,8 +133,14 @@ const PastPerformanceChart = ({ horses = [], theme = {}, scale = 1 }) => {
         going: p.going,
         raceClass: p.raceClass,
         distBeaten: p.distBeaten,
+        latestOdd: Array.isArray(horse.odds) && horse.odds.length > 0
+          ? horse.odds[horse.odds.length - 1]
+          : null,
       }));
-    return { name: horse.name, color: COLORS[idx % COLORS.length], pts };
+    const latestOdd = Array.isArray(horse.odds) && horse.odds.length > 0
+      ? horse.odds[horse.odds.length - 1]
+      : null;
+    return { name: horse.name, color: COLORS[idx % COLORS.length], pts, latestOdd };
   });
 
   return (
@@ -231,12 +237,13 @@ const PastPerformanceChart = ({ horses = [], theme = {}, scale = 1 }) => {
           )}
 
           {/* Horse name label at the peak (highest rating) of each line */}
-          {horseLines.map(({ name, color, pts }, lineIdx) => {
+          {horseLines.map(({ name, color, pts, latestOdd }, lineIdx) => {
             if (pts.length === 0) return null;
             // Find the point with the smallest y value = highest on the chart
             const peak = pts.reduce((best, p) => (p.y < best.y ? p : best), pts[0]);
             // Stagger slightly to reduce overlap when peaks coincide
             const xOffset = (lineIdx % 3) * 4;
+            const oddStr = latestOdd != null ? ` ${latestOdd}` : '';
             return (
               <SvgText
                 key={`label-${name}`}
@@ -246,8 +253,9 @@ const PastPerformanceChart = ({ horses = [], theme = {}, scale = 1 }) => {
                 fill={color}
                 fontWeight="bold"
                 textAnchor="middle"
+                fontFamily="System"
               >
-                {name}
+                {`${name}${oddStr}`}
               </SvgText>
             );
           })}
@@ -282,7 +290,7 @@ const PastPerformanceChart = ({ horses = [], theme = {}, scale = 1 }) => {
           }}>
             {/* Horse name header */}
             <Text style={{ color: legendText, fontWeight: 'bold', fontSize: 13, marginBottom: 8 }}>
-              {tooltip.horse}
+              {tooltip.horse}{tooltip.latestOdd != null ? `  ${tooltip.latestOdd}` : ''}
             </Text>
             {[
               { label: 'Date', value: tooltip.date },
