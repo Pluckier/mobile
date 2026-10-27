@@ -55,11 +55,25 @@ export default function RaceNavigation({
             <Text style={styles.navRaceSubtitle} numberOfLines={1} ellipsizeMode="tail">
               {selectedRace?.going ? ` ${selectedRace.going}` : ''}
               {selectedRace?.distance ? ` ${selectedRace.distance} ` : ''}
-              {selectedRace?.detail}
+              {selectedRace?.runners ? `(${selectedRace.runners} Run)` : ''}
+              {selectedRace?.detail ? (() => {
+                const isHandicap = selectedRace.detail.toUpperCase().includes('HANDICAP');
+                const runnerCount = parseInt(selectedRace?.runners, 10) || 0;
+
+                if (isHandicap) {
+                  // Prepend both if handicap AND field size is > 7 runners
+                  return runnerCount > 7
+                    ? ` ⚖️🏆 ${selectedRace.detail}`
+                    : ` ⚖️ ${selectedRace.detail}`;
+                }
+                return ` ${selectedRace.detail}`;
+              })() : ''}
             </Text>
           ) : null}
         </View>
       )}
+
+
     </View>
   );
 }

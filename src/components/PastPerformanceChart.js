@@ -6,10 +6,11 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
 import Svg, { Polyline, Circle, Text as SvgText, Line, G } from 'react-native-svg';
 
-const COLORS = [
-  '#ff6f61', '#a78bfa', '#4ade80', '#f472b6',
-  '#60a5fa', '#fb923c', '#34d399', '#f87171', '#e879f9', '#facc15',
-  '#38bdf8', '#a3e635',
+export const COLORS = [
+  '#e6194b', '#3cb44b', '#47b89d', '#4363d8', '#f58231',
+  '#9051a4', '#46f0f0', '#f032e6', '#b5d44f', '#fabebe',
+  '#008080', '#e6beff', '#9a6324', '#854779', '#bb6868',
+  '#1c5c69', '#808000', '#ffd8b1', '#656591', '#808080'
 ];
 
 const PAD = { top: 24, bottom: 36, left: 36, right: 16 };
@@ -138,6 +139,9 @@ const PastPerformanceChart = ({ horses = [], theme = {}, scale = 1 }) => {
   // --- Build lines per horse ---
   const horseLines = useMemo(() => {
     return validHorses.map((horse, idx) => {
+      const clothNumber = parseInt(horse.number || horse.num, 10) || (idx + 1);
+      const colorIndex = Math.max(0, clothNumber - 1);
+      const stableColor = COLORS[colorIndex % COLORS.length] || '#fff';
       const pts = horse.past
         .filter((p) => !isNaN(parseFloat(p.name)) && p.date)
         .sort((a, b) => parseDate(a.date) - parseDate(b.date))
@@ -164,7 +168,7 @@ const PastPerformanceChart = ({ horses = [], theme = {}, scale = 1 }) => {
         ? horse.odds[horse.odds.length - 1]
         : null;
 
-      return { name: horse.name, color: COLORS[idx % COLORS.length] || '#fff', pts, latestOdd, horseIndex: idx };
+      return { name: horse.name, color: stableColor || '#fff', pts, latestOdd, horseIndex: idx };
     });
   }, [validHorses, minTs, tsRange, minVal, valRange, innerW, innerH]);
 
@@ -172,15 +176,25 @@ const PastPerformanceChart = ({ horses = [], theme = {}, scale = 1 }) => {
     <View style={{ backgroundColor: chartBg, paddingVertical: 8 }}>
       {/* Legend */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 6, paddingHorizontal: 8 }}>
-        {validHorses.map((horse, idx) => (
-          <View key={`legend-${idx}`} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 12 }}>
-            <View style={{
-              width: 10, height: 10, borderRadius: 5,
-              backgroundColor: COLORS[idx % COLORS.length] || '#fff', marginRight: 4,
-            }} />
-            <Text style={{ color: legendText, fontSize: 10 }}>{horse.name}</Text>
-          </View>
-        ))}
+        {validHorses.map((horse, idx) => {
+          // 🛠️ FIX: Derive index safely by subtracting 1 from the saddle cloth number
+          const clothNumber = parseInt(horse.number || horse.num, 10) || (idx + 1);
+          const colorIndex = Math.max(0, clothNumber - 1);
+          const stableLegendColor = COLORS[colorIndex % COLORS.length] || '#fff';
+
+          return (
+            <View key={`legend-${idx}`} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 12 }}>
+              <View style={{
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: stableLegendColor, // 👈 Uses the stable cloth number color
+                marginRight: 4,
+              }} />
+              <Text style={{ color: legendText, fontSize: 10 }}>{horse.name}</Text>
+            </View>
+          );
+        })}
       </ScrollView>
       {/* Chart Canvas */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
