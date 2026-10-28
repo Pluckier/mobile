@@ -62,7 +62,7 @@ export default function RaceNavigation({
               blurOnSubmit
               underlineColorAndroid="transparent"
             />
-            <Text style={styles.navRaceCounterText}> / {races.length}</Text>
+            <Text style={styles.navRaceCounterText}> /  {races.length}</Text>
           </View>
         </View>
 
