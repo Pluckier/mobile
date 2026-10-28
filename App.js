@@ -65,8 +65,8 @@ export default function App() {
     const parsed = Number.parseInt(nextIndex, 10);
     if (!Number.isFinite(parsed)) return;
 
-    const safeIndex = Math.min(Math.max(parsed, 1), races.length || 1) - 1;
-    setSelectedRaceIndex(safeIndex);
+    const clampedIndex = Math.min(Math.max(parsed, 1), races.length || 1) - 1;
+    setSelectedRaceIndex(clampedIndex);
     setExpandedHorses(new Set());
   };
 
