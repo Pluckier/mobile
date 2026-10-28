@@ -24,11 +24,11 @@ export const getTheme = (isDark) => ({
   textSecondary: isDark ? '#94a3b8' : '#5f6368',
   textTertiary: isDark ? '#64748b' : '#70757a',
   rowBorder: isDark ? '#262d3a' : '#eeeeee',
-  ratingPillBg: isDark ? '#2e1065' : '#f5f3ff',          // Deep violet-black vs soft lavender mist
-  ratingPillBorder: isDark ? '#6d28d9' : '#ddd6fe',      // Rich royal purple vs clean accent border
-  ratingPillText: isDark ? '#c084fc' : '#6d28d9',        // Bright neon violet vs highly readable deep purple
-  ratingPillInactiveBg: isDark ? '#1e1b4b' : '#f3f4f6',  // Midnight blue-purple vs neutral light gray
-  ratingPillInactiveText: isDark ? '#4338ca' : '#9ca3af',// Subdued deep indigo vs muted slate text
+  ratingPillBg: isDark ? '#2e1065' : '#f5f3ff',
+  ratingPillBorder: isDark ? '#6d28d9' : '#ddd6fe',
+  ratingPillText: isDark ? '#c084fc' : '#6d28d9',
+  ratingPillInactiveBg: isDark ? '#1e1b4b' : '#f3f4f6',
+  ratingPillInactiveText: isDark ? '#4338ca' : '#9ca3af',
   oddsBadgeBg: isDark ? '#3b1219' : '#fce8e6',
   oddsBadgeBgBlue: isDark ? '#11223f' : '#e8f0fe',
   oddsText: isDark ? '#f87171' : '#c5221f',
@@ -87,6 +87,25 @@ export const createStyles = (theme, isCompact, scale = 1.0) => {
     navBtnText: { color: theme.navBtnText, fontWeight: '700', fontSize: s(13) },
     navBtnTextDisabled: { color: theme.navBtnDisabledText },
     navCenter: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: s(16), paddingVertical: s(8) },
+    navRaceCounterRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+    navRaceInput: {
+      minWidth: s(22),
+      color: theme.navCounter,
+      fontSize: s(11.5),
+      fontWeight: '700',
+      textAlign: 'center',
+      padding: 0,
+      backgroundColor: 'transparent',
+      includeFontPadding: false,
+      lineHeight: s(14),
+    },
+    navRaceCounterText: {
+      fontSize: s(11.5),
+      fontWeight: '700',
+      color: theme.navCounter,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
     navRaceCounter: { fontSize: s(11.5), fontWeight: '700', color: theme.navCounter, textTransform: 'uppercase', letterSpacing: 0.5 },
     raceDetailsRow: { width: '100%', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', gap: s(8), paddingHorizontal: s(12), paddingVertical: s(6), backgroundColor: theme.navBg },
     navRaceSummary: { fontSize: s(14), fontWeight: '700', color: theme.navSummary, textAlign: 'left', flexShrink: 0 },
@@ -147,40 +166,12 @@ export const createStyles = (theme, isCompact, scale = 1.0) => {
     pastBtnTextActive: { color: theme.pastBtnActiveText },
     pastNoneText: { fontSize: s(10.5), color: theme.textTertiary, fontStyle: 'italic' },
     pastSection: { width: '100%', borderTopWidth: 1, borderTopColor: theme.pastSectionBorder, paddingHorizontal: s(12), paddingVertical: s(8), backgroundColor: theme.pastBg },
-    pastHeaderRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      marginBottom: s(10),
-      paddingVertical: s(4),
-    },
-    titleContainer: {
-      flex: 1,
-    },
-    pastHeader: {
-      fontSize: s(12),            // Bumped up slightly for clear hierarchy
-      fontWeight: '800',
-      color: theme.textPrimary,   // Switched to primary text to anchor the section
-      marginBottom: s(4),
-    },
-    metaBadgeRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',           // Safely wraps down if the text is long on small screens
-      gap: s(6),                  // Clean spacing between tags
-      marginTop: s(2),
-    },
-    metaBadge: {
-      backgroundColor: theme.headerText, // Neutral, subtle backdrop
-      paddingHorizontal: s(6),
-      paddingVertical: s(2),
-      borderRadius: 4,
-    },
-    metaBadgeText: {
-      fontSize: s(9.5),
-      fontWeight: '600',
-      color: theme.textSecondary, // Muted text for supplementary info
-    },
-
+    pastHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: s(10), paddingVertical: s(4) },
+    titleContainer: { flex: 1 },
+    pastHeader: { fontSize: s(12), fontWeight: '800', color: theme.textPrimary, marginBottom: s(4) },
+    metaBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: s(6), marginTop: s(2) },
+    metaBadge: { backgroundColor: theme.headerText, paddingHorizontal: s(6), paddingVertical: s(2), borderRadius: 4 },
+    metaBadgeText: { fontSize: s(9.5), fontWeight: '600', color: theme.textSecondary },
     pastRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: s(4), borderBottomWidth: 0.5, borderBottomColor: theme.pastBorder },
     pastDate: { fontSize: s(11.5), color: theme.pastDateText, width: s(80) },
     pastDateLink: { color: theme.navCounter, textDecorationLine: 'underline', ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}) },
@@ -193,4 +184,3 @@ export const createStyles = (theme, isCompact, scale = 1.0) => {
     emptyText: { color: theme.textTertiary, fontSize: s(14) },
   });
 };
-
