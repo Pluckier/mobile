@@ -268,7 +268,7 @@ const PastPerformanceChart = ({ horses = [], theme = {}, scale = 1 }) => {
               return (
                 <G
                   key={`dot-group-${horseIndex}-${pointIdx}`}
-                  onClick={() => setTooltip(p)}
+                  onPress={() => setTooltip(p)}
                 >
                   <Circle
                     cx={p.x}
