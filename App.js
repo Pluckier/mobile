@@ -61,6 +61,15 @@ export default function App() {
     }
   };
 
+  const handleRaceJump = (nextIndex) => {
+    const parsed = Number.parseInt(nextIndex, 10);
+    if (!Number.isFinite(parsed)) return;
+
+    const safeIndex = Math.min(Math.max(parsed, 1), races.length || 1) - 1;
+    setSelectedRaceIndex(safeIndex);
+    setExpandedHorses(new Set());
+  };
+
   const handleDateSelect = (nextDate) => {
     if (nextDate instanceof Date && !isNaN(nextDate.getTime())) {
       setSelectedDate(nextDate);
@@ -107,6 +116,7 @@ export default function App() {
           selectedRace={selectedRace}
           onPrevRace={handlePrevRace}
           onNextRace={handleNextRace}
+          onJumpToRace={handleRaceJump}
         />
       )}
 
@@ -143,9 +153,7 @@ export default function App() {
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[theme.navBtnBg]} />
           }
         >
-          {horses.length > 0 && (
-            <PastPerformanceChart horses={horses} theme={theme} scale={scale} />
-          )}
+          {horses.length > 0 && <PastPerformanceChart horses={horses} theme={theme} scale={scale} />}
           {horses.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>No horses listed for this race card.</Text>
