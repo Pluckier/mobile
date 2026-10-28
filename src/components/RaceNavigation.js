@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 
 export default function RaceNavigation({
   styles,
@@ -8,7 +8,27 @@ export default function RaceNavigation({
   selectedRace,
   onPrevRace,
   onNextRace,
+  onJumpToRace,
 }) {
+  const [draftValue, setDraftValue] = useState(String(selectedRaceIndex + 1));
+
+  useEffect(() => {
+    setDraftValue(String(selectedRaceIndex + 1));
+  }, [selectedRaceIndex]);
+
+  const submitDraft = () => {
+    if (!onJumpToRace) return;
+
+    const trimmed = draftValue.trim();
+    if (!trimmed) {
+      setDraftValue(String(selectedRaceIndex + 1));
+      return;
+    }
+
+    onJumpToRace(trimmed);
+    setDraftValue(String(selectedRaceIndex + 1));
+  };
+
   return (
     <View style={styles.navContainer}>
       <View style={styles.navBar}>
@@ -24,9 +44,26 @@ export default function RaceNavigation({
         </TouchableOpacity>
 
         <View style={styles.navCenter}>
-          <Text style={styles.navRaceCounter}>
-            {selectedRaceIndex + 1} / {races.length}
-          </Text>
+          <View style={styles.navRaceCounterRow}>
+            <TextInput
+              style={styles.navRaceInput}
+              value={draftValue}
+              onChangeText={(text) => {
+                if (/^\d*$/.test(text)) {
+                  setDraftValue(text);
+                }
+              }}
+              onSubmitEditing={submitDraft}
+              onBlur={submitDraft}
+              keyboardType="number-pad"
+              maxLength={String(races.length).length || 2}
+              selectTextOnFocus
+              returnKeyType="go"
+              blurOnSubmit
+              underlineColorAndroid="transparent"
+            />
+            <Text style={styles.navRaceCounterText}> / {races.length}</Text>
+          </View>
         </View>
 
         <TouchableOpacity
@@ -61,7 +98,6 @@ export default function RaceNavigation({
                 const runnerCount = parseInt(selectedRace?.runners, 10) || 0;
 
                 if (isHandicap) {
-                  // Prepend both if handicap AND field size is > 7 runners
                   return runnerCount > 7
                     ? ` ⚖️🏆 ${selectedRace.detail}`
                     : ` ⚖️ ${selectedRace.detail}`;
@@ -72,8 +108,6 @@ export default function RaceNavigation({
           ) : null}
         </View>
       )}
-
-
     </View>
   );
 }
