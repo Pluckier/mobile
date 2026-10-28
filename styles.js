@@ -89,14 +89,15 @@ export const createStyles = (theme, isCompact, scale = 1.0) => {
     navCenter: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: s(16), paddingVertical: s(8) },
     navRaceCounterRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
     navRaceInput: {
-      minWidth: s(22),
       color: theme.navCounter,
       fontSize: s(11.5),
       fontWeight: '700',
       textAlign: 'center',
       padding: 0,
+      margin: 0,
       backgroundColor: 'transparent',
-      includeFontPadding: false,
+      width: s(24),
+      minWidth: s(18),
       lineHeight: s(14),
     },
     navRaceCounterText: {
