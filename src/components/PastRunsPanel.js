@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Linking, Platform } from 'react-native';
 
 export default function PastRunsPanel({ rows, styles, horse = {}, itemName = null }) {
-  if (!rows || rows.length === 0) return null;
+  if (!rows) return null;
 
   const handleOpenUrl = (url) => {
     if (!url) return;

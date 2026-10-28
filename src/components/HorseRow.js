@@ -97,15 +97,11 @@ export default function HorseRow({
                 <Text style={styles.oddsDash}>-</Text>
               )}
 
-              {pastRuns.length > 0 ? (
-                <View style={[styles.pastBtn, isExpanded && styles.pastBtnActive]}>
-                  <Text style={[styles.pastBtnText, isExpanded && styles.pastBtnTextActive]}>
-                    {`${pastRuns.length}`}
-                  </Text>
-                </View>
-              ) : (
-                <Text style={styles.pastNoneText}>none</Text>
-              )}
+              <View style={[styles.pastBtn, isExpanded && styles.pastBtnActive]}>
+                <Text style={[styles.pastBtnText, isExpanded && styles.pastBtnTextActive]}>
+                  {pastRuns?.length || 0}
+                </Text>
+              </View>
             </View>
           </View>
         </TouchableOpacity>
@@ -226,19 +222,15 @@ export default function HorseRow({
         )}
 
         <View style={styles.colPast}>
-          {pastRuns.length > 0 ? (
-            <View style={[styles.pastBtn, isExpanded && styles.pastBtnActive]}>
-              <Text style={[styles.pastBtnText, isExpanded && styles.pastBtnTextActive]}>
-                {`${pastRuns.length}`}
-              </Text>
-            </View>
-          ) : (
-            <Text style={styles.pastNoneText}>none</Text>
-          )}
+          <View style={[styles.pastBtn, isExpanded && styles.pastBtnActive]}>
+            <Text style={[styles.pastBtnText, isExpanded && styles.pastBtnTextActive]}>
+              {pastRuns?.length || 0}
+            </Text>
+          </View>
         </View>
       </TouchableOpacity>
 
-      {isExpanded && pastRuns.length > 0 && (
+      {isExpanded && (
         <PastRunsPanel rows={pastRuns} styles={styles} horse={item} itemName={item.name} />
       )}
     </View>
