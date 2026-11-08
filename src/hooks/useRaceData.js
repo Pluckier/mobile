@@ -61,8 +61,22 @@ export const useRaceData = (initialDate = new Date()) => {
     [selectedDate]
   );
 
+  // 1. Initial execution when the date or fetch reference changes
   useEffect(() => {
-    fetchRaces(selectedDate);
+    fetchRaces(selectedDate, false);
+  }, [fetchRaces, selectedDate]);
+
+  // 2. Automated background fetch every 15 minutes
+  useEffect(() => {
+    const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
+
+    const intervalId = setInterval(() => {
+      // Passes true to ensure it acts as a silent background refresh
+      fetchRaces(selectedDate, true);
+    }, FIFTEEN_MINUTES_MS);
+
+    // Clean up the timer if the component unmounts or selectedDate changes
+    return () => clearInterval(intervalId);
   }, [fetchRaces, selectedDate]);
 
   return {
