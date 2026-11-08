@@ -24,6 +24,7 @@ export default function HorseRow({
   const avgRating = getAverageRating(item);
   const latestOdd = Array.isArray(item.odds) && item.odds.length > 0 ? item.odds[item.odds.length - 1] : null;
   const isOddRow = index % 2 === 1;
+  const hasValidRating = avgRating !== null && avgRating !== undefined && !isNaN(avgRating);
 
   if (isCompact) {
     return (
@@ -79,9 +80,9 @@ export default function HorseRow({
             </View>
 
             <View style={styles.compactRightActions}>
-              <View style={[styles.ratingPill, avgRating > 0 && styles.ratingPillActive]}>
-                <Text style={[styles.ratingPillText, avgRating > 0 && styles.ratingPillTextActive]}>
-                  {avgRating > 0 ? `${Math.round(avgRating)}` : '-'}
+              <View style={[styles.ratingPill, hasValidRating && styles.ratingPillActive]}>
+                <Text style={[styles.ratingPillText, hasValidRating && styles.ratingPillTextActive]}>
+                  {hasValidRating ? `${Math.round(avgRating)}` : '-'}
                 </Text>
               </View>
 
@@ -175,9 +176,9 @@ export default function HorseRow({
         </View>
 
         <View style={styles.colRating}>
-          <View style={[styles.ratingPill, avgRating > 0 && styles.ratingPillActive]}>
-            <Text style={[styles.ratingPillText, avgRating > 0 && styles.ratingPillTextActive]}>
-              {avgRating > 0 ? Math.round(avgRating) : '-'}
+          <View style={[styles.ratingPill, hasValidRating && styles.ratingPillActive]}>
+            <Text style={[styles.ratingPillText, hasValidRating && styles.ratingPillTextActive]}>
+              {hasValidRating ? Math.round(avgRating) : '-'}
             </Text>
           </View>
         </View>

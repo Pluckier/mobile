@@ -14,7 +14,7 @@ export const getAverageRating = (horse) => {
   if (runs.length === 0) return 0;
   const validRatings = runs
     .map((r) => parseFloat(r?.name))
-    .filter((val) => !isNaN(val) && val > 0);
+    .filter((val) => !isNaN(val));
   if (validRatings.length === 0) return 0;
   const sum = validRatings.reduce((acc, curr) => acc + curr, 0);
   return sum / validRatings.length;
