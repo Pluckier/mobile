@@ -20,22 +20,22 @@ export const useRaceData = (initialDate = new Date()) => {
 
       setError(null);
 
+      const MS = 15 * 60 * 1000;
+      const delayToken = Math.floor(Date.now() / MS);
+      const cacheBuster = `?v=${delayToken}`;
+
       try {
         const dateStr = formatDateToDDMMYYYY(targetDate);
-        const gzipUrl = `https://pluckier.co.uk/${dateStr}-races.json.gz`;
+        const gcsUrl = `https://pluckier-cdn.tonykennah.workers.dev/${dateStr}-races.json.gz${cacheBuster}`;
         const jsonUrl = `https://pluckier.co.uk/${dateStr}-races.json`;
 
         let data;
 
         // 1. Attempt to fetch the gzipped file first
-        let response = await fetch(gzipUrl);
+        let response = await fetch(gcsUrl);
 
         if (response.ok) {
-          // Process gzipped data
-          const arrayBuffer = await response.arrayBuffer();
-          const uint8Array = new Uint8Array(arrayBuffer);
-          const decompressedString = pako.ungzip(uint8Array, { toText: true });
-          data = JSON.parse(decompressedString);
+          data = await response.json();
         } else {
           // 2. Fallback: If .gz is missing, try fetching the uncompressed JSON file
           response = await fetch(jsonUrl);
