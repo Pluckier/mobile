@@ -40,7 +40,7 @@ export default function HorseRow({
           <View style={styles.compactLine1}>
             <View style={styles.compactSilksCol}>
               {item.silks ? (
-                <Image source={{ uri: item.silks }} style={styles.silksImage} resizeMode="contain" />
+                <Image source={{ uri: item.silks.replace('https://www.attheraces.com', 'https://pluckier-silks.tonykennah.workers.dev') }} style={styles.silksImage} resizeMode="contain" />
               ) : (
                 <View style={styles.silksPlaceholder}>
                   <Text style={styles.silksPlaceholderText}>🏇</Text>
@@ -126,7 +126,7 @@ export default function HorseRow({
       >
         <View style={styles.colSilks}>
           {item.silks ? (
-            <Image source={{ uri: item.silks }} style={styles.silksImage} resizeMode="contain" />
+            <Image source={{ uri: item.silks.replace('https://www.attheraces.com', 'https://pluckier-silks.tonykennah.workers.dev') }} style={styles.silksImage} resizeMode="contain" />
           ) : (
             <View style={styles.silksPlaceholder}>
               <Text style={styles.silksPlaceholderText}>🏇</Text>
